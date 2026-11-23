@@ -1,0 +1,243 @@
+# Consultas SQL – Forum Global Seguros
+
+Consultas de análisis sobre la base **MySQL** `forum_global_seguros` (datos **simulados** de un bróker de seguros de auto).
+Cada archivo `.sql` empieza con un encabezado con la **pregunta de negocio**, la **técnica** usada y el **hallazgo**.
+Aquí se resumen los resultados de cada consulta; para ver el código, abre el enlace de cada caso.
+
+> Solo se muestran resultados agregados. Las consultas de detalle (nombres de clientes o empleados) se pueden correr con los archivos `.sql`.
+
+## Índice
+
+| # | Caso | Técnicas |
+|---|---|---|
+| 01 | [Concentración de pólizas y prima por aseguradora](01_junior_screening/01_having_agregaciones.sql) | `INNER JOIN`, `GROUP BY`, `HAVING` |
+| 02 | [Limpieza del RFC y validación de edades](01_junior_screening/02_limpieza_rfc_fechas.sql) | CTE, `STR_TO_DATE`, `CASE`, `TIMESTAMPDIFF`, `COALESCE` + `NULLIF` |
+| 03 | [Leads sin póliza y conversión por campaña](01_junior_screening/03_antijoin_leads_fugas.sql) | Anti-join, subconsulta con `DISTINCT` |
+| 04 | [Top 10 ejecutivos por campaña (2024)](02_mid_analytics/01_ranking_agentes.sql) | `DENSE_RANK()`, `SUM() OVER (PARTITION BY)` |
+| 05 | [Crecimiento mes contra mes de la prima (2024)](02_mid_analytics/02_mom_series_tiempo.sql) | `LAG()`, `NULLIF` |
+| 06 | [Funnel de conversión por campaña](02_mid_analytics/03_funnel_campanas.sql) | Validación de calidad, CTE, `COUNT`/`SUM` condicional |
+| 07 | [Pareto de ejecutivos de venta nueva (2025)](03_senior_architect/01_pareto_concentracion.sql) | Acumulado con `ROWS BETWEEN`, ventanas sobre agregados |
+| 08 | [Cohortes de retención de clientes](03_senior_architect/02_analisis_cohortes_retencion.sql) | Cohortes por año, `LEFT JOIN`, `CASE` para periodos sin datos |
+| 09 | [Segmentación de cartera (RFM adaptado a seguros)](03_senior_architect/03_segmentacion_rfm.sql) | CTE, reglas de negocio con `CASE`, ventanas |
+| 10 | [Organigrama: quién le reporta a quién](03_senior_architect/04_organigrama_self_join.sql) | `SELF JOIN`, `LEFT JOIN`, `COALESCE` |
+
+**Nivel:** `01_junior_screening` (fundamentos) · `02_mid_analytics` (funciones de ventana y series de tiempo) · `03_senior_architect` (Pareto, cohortes, segmentación y jerarquías).
+
+---
+
+## 01 · Concentración por aseguradora
+**Pregunta:** ¿Qué aseguradoras concentran el volumen de pólizas y de prima?  
+**Técnica:** `INNER JOIN` + `GROUP BY` con `COUNT`, `SUM` y `AVG`; `HAVING` para quedarse con las aseguradoras de más de 30,000 pólizas.
+
+| Aseguradora | Pólizas | Prima neta total | Prima promedio |
+|---|---:|---:|---:|
+| Quálitas | 260,321 | $2,590,006,777 | $9,949.28 |
+| GNP | 176,798 | $1,788,880,659 | $10,118.22 |
+| Banorte | 52,473 | $528,134,689 | $10,064.88 |
+| AXA | 36,689 | $371,306,658 | $10,120.38 |
+| HDI | 30,193 | $316,527,055 | $10,483.46 |
+
+**Hallazgo:** Quálitas y GNP concentran el **61.3% de la prima neta** (36.2% y 25.0%) y el 62.1% de las pólizas. La prima promedio es muy parecida entre aseguradoras (~$9,950 a ~$10,700): lo que las diferencia es el **volumen**, no el precio.
+
+[Ver consulta](01_junior_screening/01_having_agregaciones.sql)
+
+---
+
+## 02 · Limpieza del RFC y validación de edades
+**Pregunta:** ¿Qué edad tienen los clientes y cuántos tienen una fecha de nacimiento poco confiable?  
+**Técnica:** CTE encadenados; `STR_TO_DATE` sobre el RFC; `CASE` para corregir el siglo (si la fecha da menos de 18 años, se restan 100); `TIMESTAMPDIFF` para la edad; regla de negocio: edad válida entre 18 y 80 años.
+
+| Estatus de edad | Clientes | % |
+|---|---:|---:|
+| Válida (18–80 años) | 5,424 | 62.5% |
+| Revisar | 3,254 | 37.5% |
+| **Total con RFC válido** | **8,678** | **100%** |
+
+**Hallazgo:** más de un tercio de los clientes tiene una edad fuera de 18–80 años y debe revisarse. En los datos simulados, la fecha del RFC se asignó al azar (y viene como DDMMAA; el RFC real usa AAMMDD).
+
+[Ver consulta](01_junior_screening/02_limpieza_rfc_fechas.sql)
+
+---
+
+## 03 · Leads sin póliza y conversión por campaña
+**Pregunta:** ¿Qué leads no se convirtieron en póliza y qué campaña convierte mejor?  
+**Técnica:** anti-join (`LEFT JOIN` + `IS NULL`). El resumen se une contra los `id_lead` **distintos** de `fact_polizas`, porque las renovaciones reutilizan el `id_lead` de la venta nueva y duplicarían los conteos.
+
+| Campaña | Leads | Convertidos | Sin póliza | % conversión |
+|---|---:|---:|---:|---:|
+| Recuperacion Web | 160,741 | 54,876 | 105,865 | 34.14% |
+| Digital | 261,394 | 21,551 | 239,843 | 8.24% |
+| Telemarketing | 238,269 | 15,587 | 222,682 | 6.54% |
+| Plataformas | 352,732 | 20,250 | 332,482 | 5.74% |
+| Taxis | 33,376 | 1,673 | 31,703 | 5.01% |
+| Multimarcas | 294,442 | 14,521 | 279,921 | 4.93% |
+| Transporte Pesado | 8,997 | 443 | 8,554 | 4.92% |
+| Bancaseguros | 395,676 | 19,456 | 376,220 | 4.92% |
+| Motocicletas | 168,420 | 8,226 | 160,194 | 4.88% |
+| Alianza Qualitas | 1,009,739 | 43,646 | 966,093 | 4.32% |
+| Alianza GNP | 1,052,863 | 44,087 | 1,008,776 | 4.19% |
+| Descuentos | 1,094,757 | 43,858 | 1,050,899 | 4.01% |
+| **Total** | **5,071,406** | **288,174** | **4,783,232** | **5.68%** |
+
+**Hallazgo:** de ~5.07 millones de leads, 288,174 se convirtieron en póliza (validado contra `fact_polizas`). Recuperacion Web convierte **34.1%** (web service), seguido de Digital (8.2%) y Telemarketing (6.5%). Descuentos, Alianza GNP y Alianza Qualitas reciben **más de 1 millón de leads cada una** y convierten solo 4.0–4.3%: más leads no significa más ventas si la plantilla no alcanza para atenderlos.
+
+[Ver consulta](01_junior_screening/03_antijoin_leads_fugas.sql)
+
+---
+
+## 04 · Top 10 ejecutivos por campaña (2024)
+**Pregunta:** ¿Quiénes son los 10 mejores ejecutivos de cada campaña en 2024 y cuánto pesan en su campaña?  
+**Técnica:** `SUM() OVER (PARTITION BY campaña)` para el total de cada campaña; `DENSE_RANK()` para el ranking; `NULLIF` contra la división entre cero; rango de fechas en el `WHERE` para aprovechar índices.
+
+Participación del monto de su campaña (muestra de 4 campañas):
+
+| Campaña | Monto total 2024 | % del ejecutivo #1 | % de los 3 primeros |
+|---|---:|---:|---:|
+| Descuentos | $124,055,517 | 3.79% | 10.42% |
+| Alianza GNP | $121,980,374 | 3.89% | 10.84% |
+| Bancaseguros | $51,517,882 | 8.09% | 23.35% |
+| Plataformas | $50,267,580 | 9.48% | 27.53% |
+
+**Hallazgo:** la concentración depende del tamaño de la campaña: el ejecutivo #1 aporta 3.8% en Descuentos pero 9.5% en Plataformas. En Plataformas, los **4 primeros ejecutivos concentran ~36% del monto** y hay un salto después del #4: riesgo de concentración si alguno se va (la rotación mensual ronda 5%).
+
+[Ver consulta](02_mid_analytics/01_ranking_agentes.sql)
+
+---
+
+## 05 · Crecimiento mes contra mes (MoM) de la prima en 2024
+**Pregunta:** ¿Cómo evolucionó la prima neta mes contra mes durante 2024?  
+**Técnica:** CTE + `LAG() OVER (ORDER BY mes)` para traer el mes anterior; variación con `NULLIF`; meses en español con `lc_time_names`.
+
+| Mes | Prima neta | % MoM |
+|---|---:|---:|
+| Enero | $115,732,877 | — |
+| Febrero | $115,101,767 | -0.55% |
+| Marzo | $123,474,950 | +7.27% |
+| Abril | $123,432,485 | -0.03% |
+| Mayo | $129,748,270 | +5.12% |
+| Junio | $135,240,779 | +4.23% |
+| Julio | $136,713,694 | +1.09% |
+| Agosto | $143,039,031 | +4.63% |
+| Septiembre | $142,687,235 | -0.25% |
+| Octubre | $154,024,934 | +7.95% |
+| Noviembre | $162,141,987 | +5.27% |
+| Diciembre | $166,804,299 | +2.88% |
+
+Validación por tipo de póliza (enero vs diciembre):
+
+| Tipo | Enero | Diciembre | Cambio |
+|---|---:|---:|---:|
+| Renovación | $35,557,313 | $84,877,511 | +138.7% |
+| Venta nueva | $80,175,565 | $81,926,788 | +2.2% |
+| **Total** | **$115,732,877** | **$166,804,299** | **+44.1%** |
+
+**Hallazgo:** la prima creció **44%** de enero a diciembre de 2024, pero la venta nueva casi no se movió (+2.2%). El **96.6% del crecimiento viene de las renovaciones**: es el efecto bola de nieve de la cartera.
+
+[Ver consulta](02_mid_analytics/02_mom_series_tiempo.sql)
+
+---
+
+## 06 · Funnel de conversión por campaña
+**Pregunta:** ¿En qué etapa del funnel se pierden los leads de cada campaña?  
+**Técnica:** validación de calidad, CTE con una fila por lead de venta nueva, `LEFT JOIN`, conteos condicionales y `NULLIF`.
+
+**Validación de calidad:** el estatus del lead no sirve como etapa del funnel. Los 4 estatus tienen ~25% de los leads y convierten igual (~5.7%):
+
+| Estatus del lead | Leads | Con póliza |
+|---|---:|---:|
+| Contactado | 1,268,484 | 72,351 |
+| Seguimiento | 1,268,106 | 71,886 |
+| No Contesta | 1,267,981 | 72,287 |
+| Cotizado | 1,266,835 | 71,650 |
+
+Por eso el funnel usa solo etapas de las tablas de hechos: **lead → póliza emitida → primer recibo pagado**.
+
+| Campaña | Leads | Emitidas | Pagadas | Lead → emisión | Emisión → pago | Conversión real |
+|---|---:|---:|---:|---:|---:|---:|
+| Recuperacion Web | 160,741 | 54,876 | 52,079 | 34.14% | 94.90% | 32.40% |
+| Digital | 261,394 | 21,551 | 20,492 | 8.24% | 95.09% | 7.84% |
+| Telemarketing | 238,269 | 15,587 | 14,770 | 6.54% | 94.76% | 6.20% |
+| Plataformas | 352,732 | 20,250 | 19,250 | 5.74% | 95.06% | 5.46% |
+| Taxis | 33,376 | 1,673 | 1,609 | 5.01% | 96.17% | 4.82% |
+| Transporte Pesado | 8,997 | 443 | 423 | 4.92% | 95.49% | 4.70% |
+| Multimarcas | 294,442 | 14,521 | 13,767 | 4.93% | 94.81% | 4.68% |
+| Bancaseguros | 395,676 | 19,456 | 18,461 | 4.92% | 94.89% | 4.67% |
+| Motocicletas | 168,420 | 8,226 | 7,823 | 4.88% | 95.10% | 4.64% |
+| Alianza Qualitas | 1,009,739 | 43,646 | 41,450 | 4.32% | 94.97% | 4.11% |
+| Alianza GNP | 1,052,863 | 44,087 | 41,959 | 4.19% | 95.17% | 3.99% |
+| Descuentos | 1,094,757 | 43,858 | 41,701 | 4.01% | 95.08% | 3.81% |
+
+**Hallazgo:** la pérdida ocurre casi toda en la primera etapa: solo 4–8% de los leads se emite (Recuperacion Web 34.1%), mientras que de emitida a pagada la tasa es ~95% en todas las campañas. Para vender más hay que trabajar el **contacto y la calidad del lead**, no la cobranza.
+
+[Ver consulta](02_mid_analytics/03_funnel_campanas.sql)
+
+---
+
+## 07 · Pareto de ejecutivos de venta nueva (2025)
+**Pregunta:** ¿Qué porcentaje de los ejecutivos de venta nueva genera el 80% de la prima en 2025?  
+**Técnica:** acumulado con `SUM() OVER (ORDER BY ... ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)` con desempate; total con `SUM() OVER ()`; resumen con ventanas sobre agregados. Solo venta nueva y un solo año, para no medir antigüedad en lugar de desempeño.
+
+| Clasificación | Ejecutivos | % ejecutivos | Prima neta | % prima |
+|---|---:|---:|---:|---:|
+| Top 80% | 149 | 46.9% | $826,458,680 | 79.7% |
+| Resto 20% | 169 | 53.1% | $209,917,854 | 20.3% |
+
+**Hallazgo:** la venta nueva **no sigue la regla 80/20**: casi la mitad de los ejecutivos genera el 80% de la prima. La venta está repartida y no depende de un grupo pequeño de vendedores estrella. **Acción:** retener y desarrollar la antigüedad de los ejecutivos, separando renuncias de movimientos internos (promociones, cambios a Renovaciones) al medir la rotación.
+
+[Ver consulta](03_senior_architect/01_pareto_concentracion.sql)
+
+---
+
+## 08 · Cohortes de retención de clientes
+**Pregunta:** De los clientes que compraron venta nueva en un año, ¿qué % sigue con nosotros 1, 2, 3 y 4 años después?  
+**Técnica:** cohortes por año de venta nueva; las renovaciones se ligan a su venta original por `id_lead`; `CASE` para dejar vacíos los años que todavía no pueden medirse (los datos llegan a diciembre de 2026).
+
+| Cohorte | Clientes VN | Año 1 | Año 2 | Año 3 | Año 4 |
+|---|---:|---:|---:|---:|---:|
+| 2022 | 32,359 | 80.0% | 64.3% | 51.5% | 41.2% |
+| 2023 | 64,055 | 79.8% | 63.7% | 50.9% | — |
+| 2024 | 95,387 | 80.0% | 63.9% | — | — |
+| 2025 | 95,735 | 80.1% | — | — | — |
+
+*Cada celda indica qué % de los clientes originales de la cohorte seguía con nosotros N años después.*
+
+**Hallazgo:** la retención anual es **~80% y constante**: 80% → 64% → 51% → 41% (0.8, 0.8², 0.8³, 0.8⁴). De cada 100 clientes de 2022, solo ~41 siguen en 2026. Cada punto de retención se acumula: con 85% anual, al año 4 seguirían ~52 de cada 100 (25% más cartera). `id_cliente` no se usó porque la simulación lo reutilizó al azar.
+
+[Ver consulta](03_senior_architect/02_analisis_cohortes_retencion.sql)
+
+---
+
+## 09 · Segmentación de cartera (RFM adaptado a seguros)
+**Pregunta:** ¿Cómo se compone la cartera: clientes fieles, activos recientes o perdidos, y cuánta prima aporta cada segmento?  
+**Técnica:** cada cadena de póliza (`id_lead`: venta nueva + sus renovaciones) es un cliente. Recencia = última póliza, frecuencia = número de pólizas, monto = prima total. Segmentos con reglas de negocio (`CASE`) en lugar de cuartiles, porque la frecuencia solo vale de 1 a 5 y `NTILE` repartiría empates al azar.
+
+| Segmento | Regla | Clientes | % clientes | Pólizas promedio | % prima | Prima por cliente |
+|---|---|---:|---:|---:|---:|---:|
+| Fiel | Vigente con 3+ pólizas | 106,904 | 37.1% | 3.55 | 53.3% | $35,606 |
+| Activo reciente | Vigente con 1–2 pólizas | 77,358 | 26.8% | 1.99 | 23.7% | $21,912 |
+| Perdido | Sin póliza en 2026 | 103,912 | 36.1% | 1.63 | 23.0% | $15,821 |
+
+**Hallazgo:** los clientes **fieles son el 37% de la cartera pero aportan el 53% de la prima**: cada uno vale ~2.25 veces lo que un cliente perdido. El 36% de los clientes se perdió con apenas 1.63 pólizas en promedio: la mayoría se va en la primera o segunda renovación, que es donde conviene concentrar la gestión. Por `id_cliente`, la frecuencia llegaba a 15 pólizas (el máximo posible es 5), lo que confirmó que ese campo no es confiable.
+
+[Ver consulta](03_senior_architect/03_segmentacion_rfm.sql)
+
+---
+
+## 10 · Organigrama: quién le reporta a quién
+**Pregunta:** ¿Cuál es la estructura de reporte dentro de Forum?  
+**Técnica:** `SELF JOIN` (`dim_empleados` unida consigo misma: colaborador y supervisor); `LEFT JOIN` para conservar a quien no tiene jefe (dirección) y `COALESCE` para reemplazar los `NULL`.
+
+**Nota:** el resultado es el detalle por empleado (incluye empleados activos y dados de baja), por eso no se resume aquí.
+
+[Ver consulta](03_senior_architect/04_organigrama_self_join.sql)
+
+---
+
+## Calidad de datos encontrada en estas consultas
+
+Las consultas también sirvieron para validar la simulación. Se documentan para no sacar conclusiones equivocadas:
+
+- **`id_cliente` reutilizado al azar:** un mismo cliente llegaba a 15 pólizas. Las cohortes y el RFM se calcularon por cadena de póliza (`id_lead`).
+- **`estatus_lead` asignado al azar:** los 4 estatus tienen ~25% de los leads y convierten igual, así que no sirve como etapa del funnel.
+- **Fechas del RFC al azar:** 37.5% de los clientes tiene una edad fuera de 18–80 años.
+- **Distribuciones uniformes:** retención (~80%) y estado de pago (85/10/5) son iguales en todos los grupos; en datos reales habría más variación.
