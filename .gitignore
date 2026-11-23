@@ -1,0 +1,17 @@
+# Credenciales
+.env
+
+# Datos (no se suben)
+*.csv
+*.xlsx
+datos/
+salidas/
+
+# Python y Jupyter
+__pycache__/
+.ipynb_checkpoints/
+
+# Power BI: cache con datos y configuración local
+*.pbix
+**/.pbi/cache.abf
+**/.pbi/localSettings.json
