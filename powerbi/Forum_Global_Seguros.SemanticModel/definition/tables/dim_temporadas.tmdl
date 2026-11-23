@@ -1,0 +1,65 @@
+table dim_temporadas
+	lineageTag: d56a4347-3673-4f4b-b39b-ce62b54ca1a5
+
+	column id_temporada
+		dataType: int64
+		formatString: 0
+		lineageTag: 12799159-302c-418b-8496-8bf0cbc80203
+		summarizeBy: sum
+		sourceColumn: id_temporada
+
+		annotation SummarizationSetBy = Automatic
+
+	column evento
+		dataType: string
+		lineageTag: 953226df-7a77-476f-b267-c221dd130d79
+		summarizeBy: none
+		sourceColumn: evento
+
+		annotation SummarizationSetBy = Automatic
+
+	column Fecha_inicio
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 0e70f106-294f-4767-93dc-25bb8430cc4e
+		summarizeBy: none
+		sourceColumn: Fecha_inicio
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column Fecha_fin
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: ee842156-d71e-4725-8e8b-14638ff2f8d2
+		summarizeBy: none
+		sourceColumn: Fecha_fin
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column factor_incremento
+		dataType: double
+		lineageTag: 82cd9887-32dd-4a89-8cd8-97c6cdfd7962
+		summarizeBy: sum
+		sourceColumn: factor_incremento
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	partition dim_temporadas = m
+		mode: import
+		source =
+				let
+				    Origen = MySQL.Database("localhost", "forum_global_seguros", [ReturnSingleDatabase=true]),
+				    forum_global_seguros_vw_dim_temporadas = Origen{[Schema="forum_global_seguros",Item="vw_dim_temporadas"]}[Data]
+				in
+				    forum_global_seguros_vw_dim_temporadas
+
+	annotation PBI_NavigationStepName = Navegación
+
+	annotation PBI_ResultType = Table
+

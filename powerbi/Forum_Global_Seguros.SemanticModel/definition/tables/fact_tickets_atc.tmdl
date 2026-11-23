@@ -1,0 +1,100 @@
+table fact_tickets_atc
+	lineageTag: 4d9fc3d9-f89a-44ec-aadd-4a7ddc6a869f
+
+	column id_ticket
+		dataType: int64
+		formatString: 0
+		lineageTag: 14523d77-2998-46b1-8398-00e979a8cdbe
+		summarizeBy: sum
+		sourceColumn: id_ticket
+
+		annotation SummarizationSetBy = Automatic
+
+	column id_poliza
+		dataType: int64
+		formatString: 0
+		lineageTag: 098348a0-3874-4a51-8e2d-620c807d6ab1
+		summarizeBy: sum
+		sourceColumn: id_poliza
+
+		annotation SummarizationSetBy = Automatic
+
+	column id_campana
+		dataType: int64
+		formatString: 0
+		lineageTag: 64a98abf-b6f7-413d-ba10-359828a94f28
+		summarizeBy: none
+		sourceColumn: id_campana
+
+		annotation SummarizationSetBy = Automatic
+
+	column id_empleado
+		dataType: int64
+		formatString: 0
+		lineageTag: c858c2a6-2521-417c-bac9-b9618bf61595
+		summarizeBy: none
+		sourceColumn: id_empleado
+
+		annotation SummarizationSetBy = Automatic
+
+	column motivo_ticket
+		dataType: string
+		lineageTag: a5ce16d3-11b1-4abe-9796-85ca571cbe79
+		summarizeBy: none
+		sourceColumn: motivo_ticket
+
+		annotation SummarizationSetBy = Automatic
+
+	column estatus_ticket
+		dataType: string
+		lineageTag: c385a53b-6a25-4cd1-b258-4313d61dd1fb
+		summarizeBy: none
+		sourceColumn: estatus_ticket
+
+		annotation SummarizationSetBy = Automatic
+
+	column tipo_emision
+		dataType: string
+		lineageTag: eca2e44a-b170-4d53-a405-af22ea2271bd
+		summarizeBy: none
+		sourceColumn: tipo_emision
+
+		annotation SummarizationSetBy = Automatic
+
+	column fecha_apertura_dia
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 5e585a0f-ea74-4af8-97ca-36ed0b111a34
+		summarizeBy: none
+		sourceColumn: fecha_apertura_dia
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column fecha_cierre_dia
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: a0d78099-8722-4da4-bfad-4e506d871c7e
+		summarizeBy: none
+		sourceColumn: fecha_cierre_dia
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	partition fact_tickets_atc = m
+		mode: import
+		source =
+				let
+				    Origen = MySQL.Database("localhost", "forum_global_seguros", [ReturnSingleDatabase=true]),
+				    forum_global_seguros_vw_fact_tickets_atc = Origen{[Schema="forum_global_seguros",Item="vw_fact_tickets_atc"]}[Data],
+				    #"Valor reemplazado" = Table.ReplaceValue(forum_global_seguros_vw_fact_tickets_atc,"_"," ",Replacer.ReplaceText,{"motivo_ticket"}),
+				    #"Poner En Mayúsculas Cada Palabra" = Table.TransformColumns(#"Valor reemplazado",{{"motivo_ticket", Text.Proper, type text}, {"estatus_ticket", Text.Proper, type text}})
+				in
+				    #"Poner En Mayúsculas Cada Palabra"
+
+	annotation PBI_NavigationStepName = Navegación
+
+	annotation PBI_ResultType = Table
+

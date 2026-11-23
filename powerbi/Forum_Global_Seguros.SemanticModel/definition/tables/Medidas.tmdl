@@ -1,0 +1,1204 @@
+table Medidas
+	lineageTag: b2cecba9-1e39-4078-b17c-abf4935ee313
+
+	measure 'Monto total' =
+			CALCULATE(
+					SUM(fact_pagos[Base_Comision]),
+					fact_pagos[Estado_del_pago] IN {"Pagado","Pagado con Atraso"})
+		formatString: \$#,0.###############;(\$#,0.###############);\$#,0.###############
+		displayFolder: 01 ventas
+		lineageTag: 295d1837-7a66-44fc-b512-81c318ebe18b
+
+	measure 'Total polizas' =
+			
+						CALCULATE(
+							DISTINCTCOUNT(fact_pagos[id_poliza]),
+							fact_pagos[Estado_del_pago] IN {"Pagado","Pagado con Atraso"}
+			            )
+		formatString: #,0
+		displayFolder: 01 ventas
+		lineageTag: 81b052ba-26d8-420b-a1c8-35de9b146b5b
+
+	measure 'Monto mes anterior' =
+			
+			CALCULATE(
+			    [Monto total],
+			    DATEADD(dim_calendario[Fecha],-1,MONTH))
+		formatString: 0
+		displayFolder: 01 Ventas
+		lineageTag: b0e9136b-4a15-4ab3-ad8e-18445c68aa3d
+
+	measure '% de Crecimiento Monto' =
+			
+			
+			DIVIDE([Monto total]-[Monto mes anterior],[Monto mes anterior],0)
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: 01 ventas
+		lineageTag: f6d15f59-5b85-4d5b-8ab9-53daafb6fca5
+
+	measure 'Ventas por Canal' =
+			
+						CALCULATE(
+							COUNTROWS(fact_polizas),
+							USERELATIONSHIP(fact_polizas[id_lead],fact_leads[id_lead]),
+			                CROSSFILTER(dim_calendario[Fecha],fact_leads[Fecha_de_contacto],None))
+		formatString: #,0
+		displayFolder: 01 ventas
+		lineageTag: 37e74760-3d44-4bde-a414-f4a35978244e
+
+	measure '% Conversion' =
+			
+			VAR tipo = SELECTEDVALUE(fact_polizas[Tipo_Poliza])
+			
+			VAR TotalLEADS =
+			    IF(
+			        tipo = "Renovacion",
+			        BLANK(),
+			        COUNTROWS(fact_leads)
+			    )
+			
+			VAR TotalPolizas =
+			    CALCULATE(
+			        [Total polizas],
+			        fact_polizas[Tipo_Poliza] = "Venta Nueva",
+			        USERELATIONSHIP(fact_polizas[id_lead], fact_leads[id_lead]),
+			        CROSSFILTER(dim_calendario[Fecha], fact_leads[Fecha_de_contacto], NONE),
+			        fact_pagos[Estado_del_pago] IN {"Pagado","Pagado con Atraso"}
+			    )
+			
+			VAR Resultado = DIVIDE(TotalPolizas, TotalLEADS)
+			RETURN Resultado
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: 02 Conversion
+		lineageTag: 7e2b0ad5-8111-4af4-a600-e56fb91d68f6
+
+	measure 'Leads Totales' = ```
+			
+			VAR tipo = SELECTEDVALUE(fact_polizas[Tipo_Poliza])
+			VAR Resultado = 
+			IF(
+			 tipo = "Renovacion",
+			 BLANK(),
+			 COUNTROWS(fact_leads))
+			
+			 RETURN Resultado
+			```
+		formatString: 0
+		displayFolder: 02 Conversion
+		lineageTag: 60444f81-b7ef-4841-a564-52091e1fab2a
+
+	measure 'Venta promedio' = AVERAGE(fact_pagos[Base_Comision])
+		formatString: \$#,0.00;(\$#,0.00);\$#,0.00
+		displayFolder: 01 ventas
+		lineageTag: 2288e75d-be0b-4b1b-8bb0-4b5b2e1d474d
+
+		annotation PBI_FormatHint = {"currencyCulture":"es-US"}
+
+	measure '% Renovacion' = ```
+			
+			VAR Tipo = SELECTEDVALUE(fact_polizas[Tipo_Poliza])
+			VAR PolizasReno = [Polizas Renovadas]
+			
+			VAR FechaMin = CALCULATE(MIN(dim_calendario[Fecha]))
+			VAR FechaMax = CALCULATE(MAX(dim_calendario[Fecha]))
+			
+			VAR PolizasQueVencen =
+			    CALCULATE(
+			        COUNTROWS(fact_polizas),
+			        ALL(fact_polizas),
+			        fact_polizas[Fin_Vigencia] >= FechaMin,
+			        fact_polizas[Fin_Vigencia] <= FechaMax,
+			        fact_pagos[Estado_del_pago] IN {"Pagado","Pagado con Atraso"}
+			    )
+			        
+			
+			VAR Resultado =
+			    IF(
+			        Tipo = "Venta Nueva",
+			        BLANK(),
+			        DIVIDE(PolizasReno, PolizasQueVencen, 0)
+			    )
+			RETURN Resultado
+			```
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: 04 Renovaciones
+		lineageTag: 2cfa9a4c-09b3-4052-97ea-82731fc661cb
+
+	measure 'Polizas mes anterior' =
+			
+			CALCULATE(
+			    [Total polizas],
+			    DATEADD(dim_calendario[Fecha],-1,MONTH))
+		formatString: 0
+		displayFolder: 01 Ventas
+		lineageTag: 0b004b75-e864-4a27-9886-cb9b20151716
+
+	measure '% Crecimiento Polizas' =
+			
+			
+			DIVIDE([Total polizas]-[Polizas mes anterior],[Polizas mes anterior],0)
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: 01 ventas
+		lineageTag: 74b87a3c-b2b7-4ecd-9c42-92b63c13c18b
+
+	measure 'Polizas Renovadas' = ```
+			
+			VAR tipo = SELECTEDVALUE(fact_polizas[Tipo_Poliza])
+			VAR PolizasReno =
+			CALCULATE(
+			    [Total polizas],
+			    fact_polizas[Tipo_Poliza] = "Renovacion",
+			    fact_pagos[Estado_del_pago] IN {"Pagado","Pagado con Atraso"})
+			VAR Resultado = 
+			IF(
+			    tipo = "Venta Nueva",
+			    BLANK(),
+			    PolizasReno)-0
+			RETURN Resultado
+			```
+		formatString: #,0
+		displayFolder: 04 Renovaciones
+		lineageTag: 08855c90-51ee-4159-8a66-5b7e57efd9cd
+
+	measure 'Monto RN' = ```
+			
+			VAR Tipo = SELECTEDVALUE(fact_polizas[Tipo_Poliza])
+			VAR MontoReno =
+			CALCULATE(
+			    [Monto total],
+			    fact_polizas[Tipo_Poliza] = "Renovacion"
+			)
+			VAR Resultado = 
+			IF(Tipo = "Venta Nueva",
+			BLANK(),
+			MontoReno)-0
+			
+			RETURN Resultado
+			```
+		formatString: \$#,0;(\$#,0);\$#,0
+		displayFolder: 04 Renovaciones
+		lineageTag: 223adcb5-7625-46ce-abec-33500fa27e44
+
+	measure 'Meta Renovacion' = 0.80
+		displayFolder: 04 Renovaciones
+		lineageTag: 0ab5994c-4e25-48f1-aa4a-59308315e090
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Top3 Aseguradoras' =
+			
+			CALCULATE(
+			    [Monto total],
+			    KEEPFILTERS(
+			        TOPN(3,
+			        ALL(dim_aseguradoras[Aseguradora]),
+			        [Monto total],
+			        DESC)
+			    )
+			)
+		displayFolder: 01 Ventas
+		lineageTag: 06df4323-8f76-4a6f-b57f-833d7463f803
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Top3 Aseguradoras Cantidad' =
+			
+			CALCULATE(
+			    [Total polizas],
+			    KEEPFILTERS(
+			        TOPN(3,
+			        ALL(dim_aseguradoras[Aseguradora]),
+			        [Total polizas],
+			        DESC)
+			    )
+			)
+		formatString: 0
+		displayFolder: 01 Ventas
+		lineageTag: d0c40aa2-c456-4f41-81ba-1e75116bef6a
+
+	measure 'Top5 Ejecutivos' =
+			
+			CALCULATE(
+			    [Monto VN],
+			    KEEPFILTERS(
+			        TOPN(5,
+			        ALL(dim_empleados[Nombre_Empleado]),
+			        [Monto VN],
+			        DESC
+			    )
+			))
+		displayFolder: 01 Ventas
+		lineageTag: c63ec3c7-0f05-443c-937e-04929f17ca88
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Monto Cartera Vencida' =
+			
+			CALCULATE(
+			    SUM(fact_pagos[Base_Comision]),
+			    fact_pagos[Estado_del_pago] = "Vencido / Impago")
+		formatString: 0
+		displayFolder: 03 Pagos
+		lineageTag: 5862a7c0-3a3f-42ad-9ce3-ceb4c2570476
+
+	measure 'Polizas no pagadas' =
+			
+			CALCULATE(
+			    DISTINCTCOUNT(fact_pagos[id_poliza]),
+			    fact_pagos[Estado_del_pago] = "Vencido / Impago"
+			)
+		formatString: #,0
+		displayFolder: 03 Pagos
+		lineageTag: d23857ff-7111-4d04-958c-3d740edebb35
+
+	measure 'Comportamiento Conversion' = ```
+			
+			VAR Metacampana = SELECTEDVALUE(dim_campanas[meta_conversion])
+			VAR conversion = [% Conversion]
+			VAR SinFiltros =
+			NOT(ISFILTERED(dim_campanas[Campaña])) &&
+			NOT(ISFILTERED(dim_calendario[Año])) &&
+			NOT(ISFILTERED(dim_calendario[Mes]))
+			VAR Sinoperacion =
+			ISBLANK(conversion)
+			
+			VAR escalera = 
+			    SWITCH(
+			        TRUE(),
+			        SinFiltros, "Conversion General 〽️",
+			        Sinoperacion,"Sin Operacion ⛔",
+			        ISBLANK(Metacampana),"Conversion General 〽️",
+			        conversion >= Metacampana, "🟢Meta Alcanzada",
+			        conversion >= (Metacampana *0.80),"🟡 Alcance Aceptable",
+			        "🔴Requiere Atencion"
+			    )
+			RETURN escalera
+			
+			```
+		displayFolder: 02 Conversion
+		lineageTag: 8fe4ad3c-4972-4b55-b2ff-c30642ae3899
+
+	measure 'Destino Meta Conversion' = SELECTEDVALUE(dim_campanas[meta_conversion])
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: 02 Conversion
+		lineageTag: 64b909af-ed83-4cb5-b37a-c63e501ce6c9
+
+	measure 'Dias Promedio Cierre' = ```
+			
+			CALCULATE(
+			    AVERAGEX(
+			        fact_polizas, 
+			        
+			        VAR FechaContacto = RELATED(fact_leads[Fecha_de_contacto]) 
+			        VAR FechaEmision = fact_polizas[Fecha_Emision]
+			        
+			        RETURN
+			        IF(
+			            NOT ISBLANK(FechaContacto) && NOT ISBLANK(FechaEmision),
+			            DATEDIFF(FechaContacto, FechaEmision, DAY), 
+			            BLANK()
+			        )
+			    ),
+			    USERELATIONSHIP(fact_polizas[id_lead], fact_leads[id_lead]),
+			    fact_polizas[Tipo_Poliza] = "Venta Nueva"
+			)
+			```
+		displayFolder: 01 ventas
+		lineageTag: e31157bc-8e5f-4513-aff0-95b71ec9435d
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure '% Pagado a tiempo' = ```
+			
+			VAR TotalRecibos = COUNTROWS ( fact_pagos )
+			VAR PagadosaTiempo =
+			    CALCULATE (
+			        COUNTROWS ( fact_pagos ),
+			        NOT ISBLANK ( fact_pagos[Fecha_Pago] ),
+			        fact_pagos[Fecha_Pago] <= fact_pagos[Fecha_Limite_Pago]
+			    
+			    )
+			RETURN DIVIDE ( PagadosaTiempo, TotalRecibos, 0 )
+			```
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: 03 Pagos
+		lineageTag: a24a6533-c1d8-452f-b249-37a04505b04d
+
+	measure '% Pagado con retraso' =
+			
+			VAR TotalRecibos = COUNTROWS(fact_pagos)
+			VAR PagadosaDestiempo =
+			CALCULATE(
+			    COUNTROWS(fact_pagos),
+			    fact_pagos[Fecha_Pago] > fact_pagos[Fecha_Limite_Pago]
+			)
+			VAR Resultado = DIVIDE(PagadosaDestiempo,TotalRecibos,0)
+			RETURN Resultado
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: 03 Pagos
+		lineageTag: 4fffd899-7f22-48a0-82b4-5a3b3293a198
+
+	measure '% No Pagado' = ```
+			
+			VAR TotalRecibos = COUNTROWS(fact_pagos)
+			VAR SinPago = 
+			CALCULATE(
+			    COUNTROWS(fact_pagos),
+			    ISBLANK(fact_pagos[Fecha_Pago])
+			)
+			VAR Resultado = DIVIDE(SinPago,TotalRecibos)
+			RETURN Resultado
+			```
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: 03 Pagos
+		lineageTag: 0dbc843b-2a76-4fd9-8871-68f3ff7b9cec
+
+	measure '% rotacion' = ```
+			
+			VAR empleadosVN =
+			CALCULATE(
+			    COUNTROWS(dim_empleados),
+			    dim_empleados[id_area] IN{2,4},
+			    TREATAS(
+			        VALUES(dim_campanas[id_campana]),dim_empleados[id_campana]),
+			    USERELATIONSHIP(dim_empleados[Fecha_Alta],dim_calendario[Fecha])
+			)
+			
+			VAR Bajas = 
+			CALCULATE(
+			    COUNTROWS(dim_empleados),
+			    dim_empleados[id_area] IN {2,4},
+			    dim_empleados[estatus] = "INACTIVO",
+			    TREATAS(
+			        VALUES(dim_campanas[id_campana]),dim_empleados[id_campana]),
+			    USERELATIONSHIP(dim_empleados[Fecha_Baja],dim_calendario[Fecha])
+			)
+			
+			VAR rotacion = 
+			DIVIDE(Bajas,empleadosVN,0)
+			
+			RETURN rotacion
+			```
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: 05 RRHH
+		lineageTag: 26920bbb-49a0-4292-9fb3-f59d4e446583
+
+	measure '% de Rotacion x campaña' = ```
+			
+			VAR vInicioMes = MIN(dim_calendario[Fecha])
+			VAR vFinMes = MAX(dim_calendario[Fecha])
+			
+			VAR vPuenteCampana = 
+			    TREATAS( VALUES(dim_campanas[id_campana]), dim_empleados[id_campana] )
+			VAR vPlantilla = 
+			    CALCULATE(
+			        COUNTROWS(dim_empleados),
+			        FILTER(
+			            dim_empleados,
+			            dim_empleados[Fecha_Alta] <= vFinMes &&
+			            (ISBLANK(dim_empleados[Fecha_Baja]) || dim_empleados[Fecha_Baja] >= vInicioMes)
+			        ),
+			        dim_empleados[id_area] IN {2, 4},
+			        dim_empleados[Puesto] = "EJECUTIVO",
+			        vPuenteCampana
+			    )
+			VAR vBajas = 
+			    CALCULATE(
+			        COUNTROWS(dim_empleados),
+			        FILTER(
+			            dim_empleados,
+			            dim_empleados[Fecha_Baja] >= vInicioMes &&
+			            dim_empleados[Fecha_Baja] <= vFinMes
+			        ),
+			        dim_empleados[id_area] IN {2, 4},
+			        dim_empleados[Puesto] = "EJECUTIVO",
+			        vPuenteCampana
+			    )
+			
+			RETURN 
+			    DIVIDE(vBajas, vPlantilla, 0)
+			```
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: 05 RRHH
+		lineageTag: 0e2b1292-bfcd-4f9c-89ee-f22da2b8b6a7
+
+	measure 'Comportamiento Rotacion' = ```
+			
+			VAR rotacion = [% de Rotacion x campaña]
+			VAR SinFiltros = 
+			NOT(ISFILTERED(dim_calendario[Año])) &&
+			NOT(ISFILTERED(dim_calendario[Mes])) &&
+			NOT(ISFILTERED(dim_campanas[Campaña]))
+			
+			VAR Comportamiento = 
+			SWITCH(
+			    TRUE(),
+			    SinFiltros,"Promedio historico Global",
+			    ISBLANK(rotacion), "Sin Rotacion",
+			    rotacion < 0.05, "Baja ✅",
+			    rotacion < 0.08, "Manejable 〽️",
+			    rotacion <0.15, "Inestable 🛑",
+			    rotacion > 0.15, "Critica ❌"
+			)
+			
+			RETURN Comportamiento
+			```
+		displayFolder: 05 RRHH
+		lineageTag: 7d05472f-8a24-4c16-b753-bd694f185a2a
+
+	measure 'Ejecutivos Activos x Categoria' = ```
+			
+			VAR FechaCorte = 
+			CALCULATE(
+			    MAX(dim_calendario[Fecha]),
+			    fact_leads,
+			    REMOVEFILTERS('Categorias Antiguedad')
+			)
+			VAR MesesMin = COALESCE ( SELECTEDVALUE ( 'Categorias Antiguedad'[MesesMin] ), 0 )
+			VAR MesesMax = COALESCE ( SELECTEDVALUE ( 'Categorias Antiguedad'[MesesMax] ), 9999 )
+			VAR Puente =
+			    TREATAS ( VALUES ( dim_campanas[id_campana] ), dim_empleados[id_campana] )
+			VAR ActivosAlCorte =
+			    CALCULATETABLE (
+			        FILTER (
+			            dim_empleados,
+			            dim_empleados[Puesto] = "EJECUTIVO"
+			                && dim_empleados[Fecha_Alta] <= FechaCorte
+			                && ( ISBLANK ( dim_empleados[Fecha_Baja] )
+			                     || dim_empleados[Fecha_Baja] > FechaCorte )
+			        ),
+			        Puente
+			    )
+			VAR ConAntiguedad =
+			    ADDCOLUMNS (
+			        ActivosAlCorte,
+			        "Antiguedad en Meses", DATEDIFF ( dim_empleados[Fecha_Alta], FechaCorte, MONTH )
+			    )
+			RETURN
+			    COUNTROWS (
+			        FILTER (
+			            ConAntiguedad,
+			            [Antiguedad en Meses] >= MesesMin
+			                && [Antiguedad en Meses] <= MesesMax
+			        )
+			    )
+			```
+		formatString: 0
+		displayFolder: 05 RRHH
+		lineageTag: 26a019a5-addf-4abd-a6b1-63a1e980519d
+
+	measure 'Monto año anterior' =
+			
+			CALCULATE(
+			    [Monto total],
+			    SAMEPERIODLASTYEAR(dim_calendario[Fecha])
+			)
+		displayFolder: 01 Ventas
+		lineageTag: c3445804-8f98-4d04-a2db-f5d11dff06e0
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure '% año anterior' =
+			
+			DIVIDE([Monto total]-[Monto año anterior],[Monto año anterior])
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: 01 ventas
+		lineageTag: 25511938-a793-4e7a-b7a3-810e0b416a18
+
+	measure '% Var vs Año Anterior' =
+			
+			IF (
+			    MAX ( dim_calendario[Año] ) >= 2024,
+			    DIVIDE ( [Monto total] - [Monto año anterior], [Monto año anterior] )
+			)
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: 01 ventas
+		lineageTag: d23772cd-949b-406f-8d70-2631f5cb2eaa
+
+	measure '% Renovacion tarjeta' =
+			
+			VAR Ultimoano = MAX(dim_calendario[Año])
+			RETURN
+			CALCULATE(
+			    [% Renovacion],
+			    dim_calendario[Año] = Ultimoano
+			)
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: 04 Renovaciones
+		lineageTag: 70be3266-7218-4c84-838e-afdbe87e3064
+
+	measure 'Clasificacion ejecutivo' = ```
+			
+			
+			VAR FechaCorte =
+			CALCULATE(
+			    MAX(dim_calendario[Fecha]),
+			    fact_polizas
+			)
+			VAR FechaBaja = 
+			ADDCOLUMNS(
+			    ADDCOLUMNS(
+			        ADDCOLUMNS(
+			        dim_empleados,
+			        "Fecha Fin Antiguedad",
+			        IF(ISBLANK(dim_empleados[Fecha_Baja]),FechaCorte,dim_empleados[Fecha_Baja])
+			        ),
+			        "Antiguedad en Meses",
+			        DATEDIFF(dim_empleados[Fecha_Alta],[Fecha Fin Antiguedad],MONTH)
+			        ),"Clasificacion",SWITCH(
+			        TRUE(),
+			        [Antiguedad en Meses] <= 3 , "Train",
+			        [Antiguedad en Meses] <= 6 , "Gold",
+			        [Antiguedad en Meses] <= 11, "Elite",
+			        "Premier")
+			)
+			VAR MesesMin = SELECTEDVALUE('Categorias Antiguedad'[MesesMin])
+			VAR MesesMax = SELECTEDVALUE('Categorias Antiguedad'[MesesMax])
+			
+			RETURN 
+			    COUNTROWS(
+			        FILTER(FechaBaja,
+			        [Antiguedad en Meses] >=MesesMin &&
+			        [Antiguedad en Meses] <= MesesMax)
+			    )
+			```
+		formatString: 0
+		displayFolder: 05 RRHH
+		lineageTag: 362b52f1-f913-4d50-86f3-06a3373ea640
+
+	measure 'Bajas x Categoria' =
+			
+			VAR InicioPeriodo = MIN (fact_leads[Fecha_de_contacto])
+			VAR FinPeriodo = MAX ( fact_leads[Fecha_de_contacto] )
+			VAR MesesMin = COALESCE ( SELECTEDVALUE ( 'Categorias Antiguedad'[MesesMin] ), 0 )
+			VAR MesesMax = COALESCE ( SELECTEDVALUE ( 'Categorias Antiguedad'[MesesMax] ), 9999 )
+			VAR Puente =
+			    TREATAS ( VALUES ( dim_campanas[id_campana] ), dim_empleados[id_campana] )
+			VAR BajasPeriodo =
+			    CALCULATETABLE (
+			        FILTER (
+			            dim_empleados,
+			            dim_empleados[Puesto] = "EJECUTIVO"
+			                && NOT ISBLANK ( dim_empleados[Fecha_Baja] )
+			                && dim_empleados[Fecha_Baja] >= InicioPeriodo
+			                && dim_empleados[Fecha_Baja] <= FinPeriodo
+			        ),
+			        Puente
+			    )
+			VAR ConAntiguedad =
+			    ADDCOLUMNS (
+			        BajasPeriodo,
+			        "Antiguedad en Meses", DATEDIFF ( dim_empleados[Fecha_Alta], dim_empleados[Fecha_Baja], MONTH )
+			    )
+			RETURN
+			    COUNTROWS (
+			        FILTER (
+			            ConAntiguedad,
+			            [Antiguedad en Meses] >= MesesMin
+			                && [Antiguedad en Meses] <= MesesMax
+			        )
+			    )
+		formatString: 0
+		displayFolder: 05 RRHH
+		lineageTag: 3f2422bc-051c-4afd-b004-747eb7085e9d
+
+	measure 'Monto VN' =
+			CALCULATE(
+					SUM(fact_pagos[Base_Comision]),
+					fact_pagos[Estado_del_pago] IN {"Pagado","Pagado con Atraso"},
+			        fact_polizas[Tipo_Poliza] = "Venta Nueva"
+			)
+		displayFolder: 01 Ventas
+		lineageTag: e7fe679b-6fee-4d8d-871c-231ae8f63d9a
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Polizas VN' =
+			
+						CALCULATE(
+							DISTINCTCOUNT(fact_pagos[id_poliza]),
+							fact_pagos[Estado_del_pago] IN {"Pagado","Pagado con Atraso"},
+			                fact_polizas[Tipo_Poliza] = "Venta Nueva"
+			            )
+		formatString: #,0
+		displayFolder: 01 Ventas
+		lineageTag: 4ea1c152-fbda-4a7e-9351-77ed0ca7fea9
+
+	measure 'Leads x dia' = ```
+			
+			    AVERAGEX(
+			        VALUES(dim_calendario[Fecha]),
+			    [Leads Totales]
+			    )
+			```
+		formatString: #,0.00
+		displayFolder: 02 Conversion
+		lineageTag: a97f6b69-afa9-4fe5-9988-82e45ad5821b
+
+	measure '% cumplimieto meta conversion' = ```
+			
+			VAR MetaCampana = SELECTEDVALUE(dim_campanas[meta_conversion])
+			VAR Conversion = [% Conversion]
+			
+			VAR Resultado = 
+			DIVIDE(Conversion,MetaCampana)
+			
+			RETURN Resultado
+			```
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: 02 Conversion
+		lineageTag: 19425e78-087f-457a-96f0-7fe22b2b9b8b
+
+	measure 'Polizas por renovar' =
+			
+			CALCULATE(
+			    COUNTROWS(fact_polizas),
+			    SAMEPERIODLASTYEAR(dim_calendario[Fecha]),
+			    fact_pagos[Estado_del_pago] IN {"Pagado","Pagado con Atraso"}
+			)
+		formatString: #,0
+		displayFolder: 04 Renovaciones
+		lineageTag: ba1dc0d6-c644-4878-a3e5-7452a34e9cc2
+
+	measure pct_renovacion =
+			
+			DIVIDE([Polizas Renovadas],[Polizas por renovar])
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: 04 Renovaciones
+		lineageTag: f3f963bc-c0b2-4eea-a2a6-610260c3bc34
+
+	measure '% No Pagado RN' =
+			
+			CALCULATE(
+			    [% No Pagado],
+			    fact_polizas[Tipo_Poliza] = "Renovacion")
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: 04 Renovaciones
+		lineageTag: 375f0b99-4e7f-4a5a-9a7c-7eaaf7b29624
+
+	measure '% Pagado a tiempo RN' =
+			
+			CALCULATE(
+			    [% Pagado a tiempo],
+			    fact_polizas[Tipo_Poliza] = "Renovacion")
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: 04 Renovaciones
+		lineageTag: 60afe9df-21bc-44a6-ba6a-916ef916252f
+
+	measure '% Pagado con retraso RN' =
+			
+			CALCULATE(
+			    [% Pagado con retraso],
+			    fact_polizas[Tipo_Poliza] = "Renovacion")
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: 04 Renovaciones
+		lineageTag: 2b9a9f06-4ea3-4dea-bb63-3f9656f857ed
+
+	measure 'Polizas renovadas año anterior' = ```
+			
+			VAR polizas = 
+			CALCULATE(
+			    [Polizas Renovadas],
+			    SAMEPERIODLASTYEAR(dim_calendario[Fecha]
+			    )
+			)
+			VAR Resultado = 
+			IF(
+			    HASONEVALUE(dim_calendario[Año]),
+			    polizas,
+			    BLANK())
+			
+			RETURN Resultado
+			```
+		formatString: #,0
+		displayFolder: 04 Renovaciones
+		lineageTag: 4faba7c5-09ff-41f1-8028-0604106deccd
+
+	measure 'Cumplimiento % Renovacion' =
+			
+			VAR MetaRenovacion = SELECTEDVALUE(dim_campanas[meta_conversion])
+			VAR pctRenovado = [pct_renovacion]
+			VAR Resultado =
+			DIVIDE([pct_renovacion],[Meta Renovacion])
+			
+			RETURN Resultado
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: 04 Renovaciones
+		lineageTag: 19015099-ca2d-4fe4-86cb-e08983dcc9d7
+
+	measure 'Variacion pct año anterior' =
+			
+			DIVIDE([Polizas Renovadas]-[Polizas renovadas año anterior],[Polizas renovadas año anterior])
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: 04 Renovaciones
+		lineageTag: aeb8ac29-5207-418c-8974-1b1a926ae2c2
+
+	measure 'Monto año anterior RN' = ```
+			
+			VAR Monto = 
+			CALCULATE(
+			    [Monto RN],
+			    SAMEPERIODLASTYEAR(dim_calendario[Fecha])
+			)
+			VAR Resultado = 
+			IF(
+			    HASONEVALUE(dim_calendario[Año]),
+			    Monto,
+			    BLANK())
+			RETURN Resultado
+			
+			
+			```
+		formatString: \$#,0;(\$#,0);\$#,0
+		displayFolder: 04 Renovaciones
+		lineageTag: 7fdfbc75-fbb1-4bfa-a2b5-ad322c0e88df
+
+	measure 'Variacion monto RN' =
+			
+			DIVIDE([Monto RN]-[Monto año anterior RN],[Monto año anterior RN])
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: 04 Renovaciones
+		lineageTag: 193fdd93-0728-40b6-b5ca-248bd5cbda22
+
+	measure 'Prima Promedio TOP 5 RN' =
+			
+			DIVIDE([Monto TOP 5 RN],[Polizas TOP 5 RN])
+		formatString: \$#,0;(\$#,0);\$#,0
+		displayFolder: 04 Renovaciones
+		lineageTag: 06305fc3-15c8-4884-9322-b4f7981d524c
+
+		annotation PBI_FormatHint = {"currencyCulture":"es-US"}
+
+	measure 'Polizas TOP 5 RN' = ```
+			
+			VAR Ranking = 
+			IF(
+			    HASONEVALUE(dim_empleados[Nombre_Empleado]) && [Monto RN] > 0,
+			    RANKX(
+			        FILTER(
+			            ALLSELECTED(dim_empleados[id_area],
+			            dim_empleados[Nombre_Empleado],
+			            dim_empleados[Puesto]
+			            ),
+			        dim_empleados[id_area] = 3 &&
+			        dim_empleados[Puesto] = "Ejecutivo"),
+			        [Monto RN],,DESC,Dense
+			    )
+			)
+			VAR Resultado = 
+			IF(
+			    Ranking <= 5 && NOT ISBLANK(Ranking),[Polizas Renovadas])
+			RETURN Resultado
+			```
+		formatString: #,0
+		displayFolder: 04 Renovaciones
+		lineageTag: 60a1f691-36d2-4c11-83fc-7efa8d39fc7a
+
+	measure 'Monto TOP 5 RN' = ```
+			
+			VAR Ranking = 
+			IF(
+			    HASONEVALUE(dim_empleados[Nombre_Empleado]) && [Monto RN] > 0,
+			    RANKX(
+			        FILTER(
+			            ALLSELECTED(dim_empleados[id_area],
+			            dim_empleados[Nombre_Empleado],
+			            dim_empleados[Puesto]
+			            ),
+			        dim_empleados[id_area] = 3 &&
+			        dim_empleados[Puesto] = "Ejecutivo"),
+			        [Monto RN],,DESC,Dense
+			    )
+			)
+			VAR Resultado = 
+			IF(
+			    Ranking <= 5 && NOT ISBLANK(Ranking),[Monto RN])
+			RETURN Resultado
+			```
+		formatString: \$#,0.###############;(\$#,0.###############);\$#,0.###############
+		displayFolder: 04 Renovaciones
+		lineageTag: aed2cec4-5e38-4911-8f99-c376bf4e7298
+
+	measure 'Tickets totales' = ```
+			
+			COUNTROWS(fact_tickets_atc)
+			
+			```
+		formatString: #,0
+		displayFolder: 06 ATC\Volumen
+		lineageTag: c6b87907-215d-41df-b390-bfe0322faf05
+
+	measure 'Tickets cerrados' =
+			
+			CALCULATE(
+			    [Tickets totales],
+			    fact_tickets_atc[estatus_ticket] = "CERRADO"
+			)
+		formatString: 0
+		displayFolder: 06 ATC\Volumen
+		lineageTag: 7473e0a8-9344-425c-81e6-d43076050be5
+
+	measure '% tickets cerrados' =
+			
+			DIVIDE([Tickets cerrados],[Tickets totales])
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: 06 ATC\Servicio
+		lineageTag: 3b543ee3-ae60-4569-b9ed-1fddd808d502
+
+	measure 'Tickets escalados' =
+			
+			CALCULATE(
+			    [Tickets totales],
+			    fact_tickets_atc[estatus_ticket] = "ESCALADO"
+			)
+		formatString: 0
+		displayFolder: 06 ATC\Volumen
+		lineageTag: 0e036302-1dd4-4acd-811f-d7633e64e837
+
+	measure '% Tickets escalados' =
+			
+			DIVIDE([Tickets escalados],[Tickets totales])
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: 06 ATC\Servicio
+		lineageTag: 640b8835-d452-45f3-8dca-16ace69bff1f
+
+	measure 'Tickets cerrados mismo dia' =
+			
+			COUNTROWS(
+			    FILTER(
+			        fact_tickets_atc,
+			        fact_tickets_atc[fecha_cierre_dia] = fact_tickets_atc[fecha_apertura_dia])
+			)
+		formatString: 0
+		displayFolder: 06 ATC\Volumen
+		lineageTag: 6d553763-98d4-4dbf-88e7-b8e1b2cfc37e
+
+	measure '% Tickets cerrados mismo dia' =
+			
+			DIVIDE([Tickets cerrados mismo dia],[Tickets cerrados])
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: 06 ATC\Servicio
+		lineageTag: 72677ed1-081d-4e63-a528-7904cfb445d9
+
+	measure 'Días promedio de cierre' =
+			
+			AVERAGEX(
+			    FILTER(
+			        fact_tickets_atc,
+			        NOT ISBLANK(fact_tickets_atc[fecha_cierre_dia])),
+			    DATEDIFF(fact_tickets_atc[fecha_apertura_dia],fact_tickets_atc[fecha_cierre_dia],DAY)
+			)
+		displayFolder: 06 ATC\Volumen
+		lineageTag: 91c9d330-bd84-4573-be25-a22fad6665b2
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Tickets cancelacion' =
+			
+			CALCULATE(
+			    [Tickets totales],
+			    fact_tickets_atc[motivo_ticket] = "Cancelacion Poliza"
+			)
+		formatString: 0
+		displayFolder: 06 ATC\Volumen
+		lineageTag: 92806e2c-6a8e-4543-a6a1-1fcbba530639
+
+	measure 'Tickets por cada 100' =
+			
+			DIVIDE([Tickets totales],[Total polizas])*100
+		displayFolder: 06 ATC\Volumen
+		lineageTag: c6f87210-bbfc-43c4-ba26-2c5a7cc6c592
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure '% Pólizas con ticket (periodo)' = ```
+			
+			VAR Tickets = DISTINCTCOUNT(fact_tickets_atc[id_poliza])
+			VAR pct_tickets = 
+			DIVIDE(Tickets,[Total polizas])
+			
+			RETURN pct_tickets
+			```
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: 06 ATC\Servicio
+		lineageTag: f185be47-2283-4a36-9552-66c34a64926a
+
+	measure '% Pólizas con ticket (cohorte)' = ```
+			
+			VAR PolizasPeriodo = VALUES(fact_polizas[id_poliza])
+			VAR Polizasconticket=
+			CALCULATE(
+			    DISTINCTCOUNT(fact_tickets_atc[id_poliza]),
+			    REMOVEFILTERS(dim_calendario),
+			    TREATAS(PolizasPeriodo,fact_tickets_atc[id_poliza])
+			)
+			RETURN 
+			DIVIDE(
+			    Polizasconticket,
+			    COUNTROWS(PolizasPeriodo))
+			
+			```
+		formatString: 0%;-0%;0%
+		displayFolder: 06 ATC\Servicio
+		lineageTag: f98d1242-66bc-4985-935e-39a7995af4c1
+
+	measure '% tickets cancelacion' =
+			
+			DIVIDE(
+			    [Tickets cancelacion],[Tickets totales])
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: 06 ATC\Servicio
+		lineageTag: d97bc7ff-d47b-40b0-8663-3d45ade79510
+
+	measure 'Meses Activo ATC' =
+			
+			VAR Puesto = SELECTEDVALUE(dim_empleados[Puesto])
+			VAR Area = SELECTEDVALUE(dim_empleados[id_area])
+			VAR AltaEmpleado = MIN(dim_empleados[Fecha_Alta])
+			VAR BjaEmpleado = MAX(dim_empleados[Fecha_Baja])
+			VAR InicioPeriodo = MIN(dim_calendario[Fecha])
+			VAR FinPeriodo = MAX(dim_calendario[Fecha])
+			
+			VAR InicioReal = MAX(AltaEmpleado,InicioPeriodo)
+			VAR FinReal = MIN(COALESCE(BjaEmpleado,FinPeriodo),FinPeriodo)
+			
+			RETURN
+			SWITCH(
+			    TRUE(),
+			    InicioReal > FinReal , BLANK(),
+			    Puesto <> "Ejecutivo" , BLANK(),
+			    Area <> 5, BLANK(),
+			    ( DATEDIFF( InicioReal, FinReal, DAY ) + 1 ) / 30.44
+			)
+		formatString: 0.0
+		displayFolder: 06 ATC\Productividad
+		lineageTag: 2802691e-6ca7-48ca-b8ea-0da5c7bcd2f0
+
+	measure 'Meses persona ATC' =
+			
+			SUMX(
+			    VALUES(dim_empleados[id_empleado]),
+			    [Meses Activo ATC])
+		formatString: 0.0
+		displayFolder: 06 ATC\Productividad
+		lineageTag: 5169c796-4016-4418-8871-d6aab399979e
+
+	measure 'Tickets por mes activo' =
+			
+			CALCULATE(
+			    DIVIDE([Tickets totales],[Meses persona ATC]),
+			    REMOVEFILTERS(fact_tickets_atc[tipo_emision])
+			)
+		formatString: 0
+		displayFolder: 06 ATC\Productividad
+		lineageTag: fac866bb-eb33-4023-ac4f-fc436dcee0f4
+
+		annotation PBI_FormatHint = {"isDecimal":true}
+
+	measure 'Tickets foco Rojo' =
+			
+			CALCULATE(
+			    [Tickets totales],
+			    fact_tickets_atc[motivo_ticket] IN {"Aclaracion cobro","Cambio Conductor","Endoso Domicilio","Reexpedicion"})
+		displayFolder: 06 ATC\Volumen
+		lineageTag: 6e40effc-f5d0-4002-a56f-1398a5b3a476
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Polizas emitidas' =
+			
+			VAR Tipo_Emision = VALUES(fact_tickets_atc[tipo_emision])
+			VAR Polizas_Emitidas =
+			CALCULATE(
+			    COUNTROWS(fact_polizas),
+			    TREATAS(
+			        Tipo_Emision,
+			        fact_polizas[Tipo_Poliza])
+			)
+			RETURN Polizas_Emitidas
+		formatString: 0
+		lineageTag: ea33adcb-7863-4002-b4e9-17d2223a2827
+
+	measure 'Correciones x cada 100' =
+			
+			DIVIDE([Tickets foco Rojo],[Polizas emitidas]) *100
+		formatString: 0.00
+		displayFolder: 06 ATC\Volumen
+		lineageTag: 825d1ea6-b773-4e0e-bf60-38b5e0284e04
+
+	measure 'Cancelaciones x cada 100 polizas' =
+			
+			DIVIDE([Tickets cancelacion],[Polizas emitidas]) * 100
+		formatString: 0.00
+		displayFolder: 06 ATC\Volumen
+		lineageTag: 3614b982-3720-4a62-a004-408cc03aaea8
+
+	measure 'HC ejecutivos' = ```
+			
+			VAR Fecha_Corte = MAX(dim_calendario[Fecha])
+			VAR Activos_al_Corte = 
+			    FILTER(
+			        dim_empleados,
+			        dim_empleados[Puesto] = "EJECUTIVO"
+			        && dim_empleados[Fecha_Alta] <= Fecha_Corte
+			        && (ISBLANK(dim_empleados[Fecha_Baja])
+			            || dim_empleados[Fecha_Baja] > Fecha_Corte))
+			RETURN 
+			COUNTROWS(Activos_al_Corte)
+			```
+		formatString: 0
+		lineageTag: 2d54c336-0cd0-4e8f-b9b6-38e02e72a904
+
+	measure 'Altas HC' =
+			
+			VAR Fecha_Inicio = MIN(dim_calendario[Fecha])
+			VAR Fecha_Fin = MAX(dim_calendario[Fecha])
+			
+			VAR Altas_Periodo =
+			FILTER(
+			    dim_empleados,
+			    dim_empleados[Puesto] = "EJECUTIVO"
+			    && dim_empleados[Fecha_Alta] >= Fecha_Inicio
+			    && dim_empleados[Fecha_Alta] <= Fecha_Fin)
+			RETURN
+			COUNTROWS(Altas_Periodo)
+		formatString: 0
+		lineageTag: 5eb14ec9-2578-4d0d-a429-a228a30707b5
+
+	measure 'Bajas HC' = ```
+			
+			VAR Fecha_Inicio = MIN(dim_calendario[Fecha])
+			VAR Fecha_Fin = MAX(dim_calendario[Fecha])
+			
+			VAR Bajas_Periodo =
+			FILTER(
+			    dim_empleados,
+			    dim_empleados[Puesto] = "EJECUTIVO"
+			    && dim_empleados[Fecha_Baja] >= Fecha_Inicio
+			    && dim_empleados[Fecha_Baja] <= Fecha_Fin)
+			RETURN
+			COUNTROWS(Bajas_Periodo)
+			
+			```
+		formatString: 0
+		lineageTag: ef33cb3f-a0b5-40c0-a0ac-09caa2f01fa2
+
+	measure '% Rotacion HC' =
+			
+			VAR HC_Final = [HC ejecutivos]
+			VAR HC_Inicial = (HC_Final-[Altas HC]+[Bajas HC])
+			VAR HC_Promedio = (HC_Inicial+HC_Final) / 2
+			RETURN
+			DIVIDE(
+			    COALESCE([Bajas HC],0),HC_Promedio)
+		formatString: 0.00%;-0.00%;0.00%
+		lineageTag: 8ae80d21-341e-4919-8268-d803cfa3fef1
+
+	measure 'Antiguedad promedio (Meses)' =
+			
+			VAR Fecha_Corte = MAX( dim_calendario[Fecha] )
+			VAR Activos_al_Corte =
+			    FILTER(
+			        dim_empleados,
+			        dim_empleados[Puesto] = "EJECUTIVO"
+			            && dim_empleados[Fecha_Alta] <= Fecha_Corte
+			            && ( ISBLANK( dim_empleados[Fecha_Baja] )
+			                || dim_empleados[Fecha_Baja] > Fecha_Corte )
+			    )
+			RETURN
+			    AVERAGEX(
+			        Activos_al_Corte,
+			        ( DATEDIFF( dim_empleados[Fecha_Alta], Fecha_Corte, DAY ) + 1 ) / 30.44
+			    )
+		lineageTag: 2c40c383-0ff6-420c-a669-eca2512c55f8
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'HC supervisores' =
+			
+			VAR Fecha_Corte = MAX(dim_calendario[Fecha])
+			VAR Supervisores_Activos =
+			FILTER(
+			    dim_empleados,
+			    dim_empleados[Puesto] = "SUPERVISOR"
+			    && dim_empleados[Fecha_Alta] <= Fecha_Corte
+			    && ( ISBLANK(dim_empleados[Fecha_Baja])
+			        || dim_empleados[Fecha_Baja] > Fecha_Corte)
+			
+			)
+			
+			RETURN
+			COUNTROWS(Supervisores_Activos)
+		formatString: 0
+		lineageTag: ee57533b-526f-405c-ba4b-95cb8008445f
+
+	measure 'ejecutivos por supervisor' =
+			
+			DIVIDE([HC ejecutivos],[HC supervisores])
+		formatString: 0.0
+		lineageTag: d1cdb7ca-f33a-4436-be8f-fb9a9cdcce75
+
+	measure 'Promedio rotacion mensual' =
+			
+			AVERAGEX(
+			    VALUES(dim_calendario[Mes - Año]),
+			    [% Rotacion HC])
+		formatString: 0.00%;-0.00%;0.00%
+		lineageTag: 9c0c5b38-98c7-4fad-ad7c-43684faaa3cb
+
+	measure 'HC por categoria' =
+			
+			VAR Fecha_corte = MAX(dim_calendario[Fecha])
+			VAR MesesMin = SELECTEDVALUE('Categorias Antiguedad'[MesesMin])
+			VAR MesesMax = SELECTEDVALUE('Categorias Antiguedad'[MesesMax])
+			VAR Activos_al_corte=
+			FILTER(
+			    dim_empleados,
+			    dim_empleados[Puesto] = "EJECUTIVO"
+			    && dim_empleados[Fecha_Alta] <= Fecha_corte
+			    && ( ISBLANK(dim_empleados[Fecha_Baja])
+			        || dim_empleados[Fecha_Baja] > Fecha_corte)
+			)
+			VAR Activos_en_Categoria =
+			FILTER(
+			    Activos_al_corte,
+			    VAR antiguedad = DATEDIFF(dim_empleados[Fecha_Alta],Fecha_corte,MONTH)
+			    RETURN antiguedad >= MesesMin && antiguedad <= MesesMax
+			)
+			
+			RETURN
+			IF(
+			    HASONEVALUE('Categorias Antiguedad'[Categoria]),
+			    COUNTROWS(Activos_en_Categoria),
+			    COUNTROWS(Activos_al_corte)
+			)
+		formatString: 0
+		lineageTag: 03a33500-1951-479d-9601-b1644ec8466a
+
+	measure 'HC atencion a clientes' =
+			
+			CALCULATE(
+			    [HC ejecutivos],
+			    dim_empleados[area] = "Atencion a clientes"
+			)
+		formatString: 0
+		lineageTag: bd4ae7bd-baf2-4516-81c3-c786db1d45eb
+
+	column Data
+		isHidden
+		formatString: 0
+		lineageTag: 4bc614e5-eeef-4f31-8b0b-ea65116567e3
+		summarizeBy: sum
+		isNameInferred
+		sourceColumn: [Data]
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Medidas = calculated
+		mode: import
+		source = Row("Data", BLANK())
+
+	annotation PBI_Id = c62d8fcf6d1548a3818007a17d0e881f
+
+	annotation 436ba87b-9c83-4389-a31b-ebd06a36be98 = {"Expression":""}
+

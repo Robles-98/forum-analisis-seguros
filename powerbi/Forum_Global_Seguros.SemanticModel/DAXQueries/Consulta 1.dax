@@ -1,0 +1,12 @@
+DEFINE
+	MEASURE Medidas[VentasTotales] = CALCULATE(
+		SUM(vw_fact_pagos[Base_Comision]),
+		vw_fact_pagos[Estado_del_pago] IN {"Pagado","Pagado con Atraso"})
+EVALUATE
+SUMMARIZECOLUMNS(
+    vw_dim_campanas[Campaña],
+    "Total Ventas", Medidas[VentasTotales])
+	
+	
+
+

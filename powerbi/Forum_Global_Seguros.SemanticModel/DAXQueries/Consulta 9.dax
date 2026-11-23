@@ -1,0 +1,18 @@
+EVALUATE
+VAR Corte = DATE(2022, 1, 31)
+VAR EjecDescuentos =
+    FILTER(
+        dim_empleados,
+        dim_empleados[Puesto] = "EJECUTIVO" &&
+        dim_empleados[id_campana] = 1 &&
+        dim_empleados[Fecha_Alta] <= Corte
+    )
+RETURN
+ROW(
+    "Entraron a enero 2022", COUNTROWS(EjecDescuentos),
+    "Trabajando al 31-ene-2022",
+        COUNTROWS(FILTER(EjecDescuentos,
+            ISBLANK(dim_empleados[Fecha_Baja]) || dim_empleados[Fecha_Baja] > Corte)),
+    "Siguen activos HOY",
+        COUNTROWS(FILTER(EjecDescuentos, ISBLANK(dim_empleados[Fecha_Baja])))
+)

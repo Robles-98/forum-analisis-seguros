@@ -1,0 +1,379 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.14.0/schema.json",
+  "name": "561b56c336587e53020b",
+  "position": {
+    "x": 296.66666666666669,
+    "y": 175,
+    "z": 10000,
+    "height": 307.04821063033813,
+    "width": 817.06049269428956,
+    "tabOrder": 10000
+  },
+  "visual": {
+    "visualType": "pivotTable",
+    "query": {
+      "queryState": {
+        "Rows": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "dim_empleados"
+                    }
+                  },
+                  "Property": "Nombre_Empleado"
+                }
+              },
+              "queryRef": "dim_empleados.Nombre_Empleado",
+              "nativeQueryRef": "Ejecutivo",
+              "active": true,
+              "displayName": "Ejecutivo"
+            }
+          ]
+        },
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Medidas"
+                    }
+                  },
+                  "Property": "Meses persona ATC"
+                }
+              },
+              "queryRef": "Medidas.Meses persona ATC",
+              "nativeQueryRef": "Meses Activo",
+              "displayName": "Meses Activo"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Medidas"
+                    }
+                  },
+                  "Property": "Tickets totales"
+                }
+              },
+              "queryRef": "Medidas.Tickets totales",
+              "nativeQueryRef": "Tickets totales"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Medidas"
+                    }
+                  },
+                  "Property": "Tickets por mes activo"
+                }
+              },
+              "queryRef": "Medidas.Ticket por mes activo",
+              "nativeQueryRef": "Tickets/mes (total)",
+              "displayName": "Tickets/mes (total)"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Medidas"
+                    }
+                  },
+                  "Property": "% tickets cerrados"
+                }
+              },
+              "queryRef": "Medidas.% tickets cerrados",
+              "nativeQueryRef": "% cerrados",
+              "displayName": "% cerrados"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Medidas"
+                    }
+                  },
+                  "Property": "Días promedio de cierre"
+                }
+              },
+              "queryRef": "Medidas.Días promedio de cierre",
+              "nativeQueryRef": "Dias prom cierre",
+              "displayName": "Dias prom cierre"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Medidas"
+                    }
+                  },
+                  "Property": "% Tickets cerrados mismo dia"
+                }
+              },
+              "queryRef": "Medidas.% Tickets cerrados mismo dia",
+              "nativeQueryRef": "% mismo dia",
+              "displayName": "% mismo dia"
+            }
+          ]
+        }
+      },
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Column": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "dim_empleados"
+                  }
+                },
+                "Property": "Nombre_Empleado"
+              }
+            },
+            "direction": "Descending"
+          }
+        ]
+      }
+    },
+    "objects": {
+      "columnWidth": [
+        {
+          "properties": {
+            "value": {
+              "expr": {
+                "Literal": {
+                  "Value": "231.6790760692018D"
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "dim_empleados.Nombre_Empleado"
+          }
+        },
+        {
+          "properties": {
+            "value": {
+              "expr": {
+                "Literal": {
+                  "Value": "87.05657740153352D"
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "Medidas.Ticket por mes activo"
+          }
+        },
+        {
+          "properties": {
+            "value": {
+              "expr": {
+                "Literal": {
+                  "Value": "84.66666838857856D"
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "Medidas.Días promedio de cierre"
+          }
+        },
+        {
+          "properties": {
+            "value": {
+              "expr": {
+                "Literal": {
+                  "Value": "70.33332188508196D"
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "Medidas.Meses persona ATC"
+          }
+        },
+        {
+          "properties": {
+            "value": {
+              "expr": {
+                "Literal": {
+                  "Value": "97.00000102179384D"
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "Medidas.Tickets totales"
+          }
+        }
+      ],
+      "columnHeaders": [
+        {
+          "properties": {
+            "fontFamily": {
+              "expr": {
+                "Literal": {
+                  "Value": "'''Segoe UI Bold'', wf_segoe-ui_bold, helvetica, arial, sans-serif'"
+                }
+              }
+            },
+            "backColor": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "ThemeDataColor": {
+                      "ColorId": 2,
+                      "Percent": 0.2
+                    }
+                  }
+                }
+              }
+            },
+            "fontColor": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "ThemeDataColor": {
+                      "ColorId": 0,
+                      "Percent": -0.1
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ],
+      "columnFormatting": [
+        {
+          "properties": {
+            "dataBars": {
+              "positiveColor": {
+                "solid": {
+                  "color": {
+                    "expr": {
+                      "Literal": {
+                        "Value": "'#dbc070'"
+                      }
+                    }
+                  }
+                }
+              },
+              "negativeColor": {
+                "solid": {
+                  "color": {
+                    "expr": {
+                      "Literal": {
+                        "Value": "'minColor'"
+                      }
+                    }
+                  }
+                }
+              },
+              "axisColor": {
+                "solid": {
+                  "color": {
+                    "expr": {
+                      "Literal": {
+                        "Value": "'foreground'"
+                      }
+                    }
+                  }
+                }
+              },
+              "reverseDirection": {
+                "expr": {
+                  "Literal": {
+                    "Value": "false"
+                  }
+                }
+              },
+              "hideText": {
+                "expr": {
+                  "Literal": {
+                    "Value": "false"
+                  }
+                }
+              },
+              "totalMatchingOption": {
+                "expr": {
+                  "Literal": {
+                    "Value": "1L"
+                  }
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "Medidas.Tickets totales"
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  },
+  "filterConfig": {
+    "filters": [
+      {
+        "name": "531c697d662e506fc57e",
+        "field": {
+          "Measure": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "Medidas"
+              }
+            },
+            "Property": "Meses persona ATC"
+          }
+        },
+        "type": "Advanced",
+        "filter": {
+          "Version": 2,
+          "From": [
+            {
+              "Name": "m",
+              "Entity": "Medidas",
+              "Type": 0
+            }
+          ],
+          "Where": [
+            {
+              "Condition": {
+                "Comparison": {
+                  "ComparisonKind": 2,
+                  "Left": {
+                    "Measure": {
+                      "Expression": {
+                        "SourceRef": {
+                          "Source": "m"
+                        }
+                      },
+                      "Property": "Meses persona ATC"
+                    }
+                  },
+                  "Right": {
+                    "Literal": {
+                      "Value": "3L"
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "filterSortOrder": "Descending"
+  }
+}

@@ -1,0 +1,13 @@
+DEFINE
+	MEASURE Medidas[Conversion] =
+	VAR TotalLEADS = 
+				CALCULATE(
+					COUNTROWS(vw_fact_leads),
+					CROSSFILTER(vw_fact_polizas[id_lead],vw_fact_leads[id_lead],Both))
+	VAR TotalPolizas = 
+				CALCULATE(
+					DISTINCTCOUNT(vw_fact_polizas[id_poliza]),
+					USERELATIONSHIP(vw_fact_polizas[id_lead],vw_fact_leads[id_lead]))
+	VAR Resultado = DIVIDE(TotalPolizas,TotalLEADS,0)
+	
+	RETURN Resultado

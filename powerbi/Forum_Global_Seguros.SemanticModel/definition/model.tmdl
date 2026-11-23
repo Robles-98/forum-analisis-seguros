@@ -1,0 +1,32 @@
+model Model
+	culture: es-MX
+	defaultPowerBIDataSourceVersion: powerBI_V3
+	sourceQueryCulture: es-MX
+	valueFilterBehavior: independent
+	dataAccessOptions
+		legacyRedirects
+		returnErrorValuesAsNull
+
+annotation __PBI_TimeIntelligenceEnabled = 0
+
+annotation PBI_QueryOrder = ["dim_aseguradoras","dim_campanas","dim_coberturas","dim_metas_aseguradora","dim_empleados","fact_polizas","fact_leads","fact_pagos","dim_calendario","dim_temporadas","fact_tickets_atc","dim_areas"]
+
+annotation PBI_ProTooling = ["DaxQueryView_Desktop","DevMode"]
+
+ref table dim_aseguradoras
+ref table dim_campanas
+ref table dim_coberturas
+ref table dim_metas_aseguradora
+ref table dim_empleados
+ref table fact_leads
+ref table fact_polizas
+ref table fact_pagos
+ref table dim_calendario
+ref table Medidas
+ref table 'Categorias Antiguedad'
+ref table dim_temporadas
+ref table fact_tickets_atc
+ref table dim_areas
+
+ref cultureInfo es-MX
+

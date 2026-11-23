@@ -1,0 +1,80 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/page/2.1.0/schema.json",
+  "name": "b67121ab828e5d892333",
+  "displayName": "General Forum",
+  "displayOption": "FitToPage",
+  "height": 1080,
+  "width": 1920,
+  "objects": {
+    "background": [
+      {
+        "properties": {
+          "transparency": {
+            "expr": {
+              "Literal": {
+                "Value": "0D"
+              }
+            }
+          },
+          "color": {
+            "solid": {
+              "color": {
+                "expr": {
+                  "ThemeDataColor": {
+                    "ColorId": 0,
+                    "Percent": -0.2
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    ],
+    "outspace": [
+      {
+        "properties": {
+          "color": {
+            "solid": {
+              "color": {
+                "expr": {
+                  "ThemeDataColor": {
+                    "ColorId": 1,
+                    "Percent": 0.4
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    ]
+  },
+  "visualInteractions": [
+    {
+      "source": "508c49c48183e320e0a5",
+      "target": "4b94d9b16296b9ec9360",
+      "type": "NoFilter"
+    },
+    {
+      "source": "54e4f0d3e902a857b740",
+      "target": "4b94d9b16296b9ec9360",
+      "type": "DataFilter"
+    },
+    {
+      "source": "4b94d9b16296b9ec9360",
+      "target": "0aaf0f28ee574766b09e",
+      "type": "HighlightFilter"
+    },
+    {
+      "source": "4b94d9b16296b9ec9360",
+      "target": "508c49c48183e320e0a5",
+      "type": "DataFilter"
+    },
+    {
+      "source": "4b94d9b16296b9ec9360",
+      "target": "74c198c36a906171d7c8",
+      "type": "NoFilter"
+    }
+  ]
+}

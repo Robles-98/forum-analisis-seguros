@@ -1,0 +1,217 @@
+table fact_polizas
+	lineageTag: 814802c2-c788-4185-b8d5-94e5f045951f
+
+	measure Debug_PolizasReno = [Polizas Renovadas]
+		formatString: 0
+		lineageTag: 7ed309c1-95b7-4738-9d81-dd186a7198df
+
+	measure Debug_olizasQueVencen =
+			
+			VAR FechaMin = CALCULATE(MIN(dim_calendario[Fecha]))
+			VAR FechaMax = CALCULATE(MAX(dim_calendario[Fecha]))
+			RETURN
+			    CALCULATE(
+			        COUNTROWS(fact_polizas),
+			        ALL(fact_polizas),
+			        fact_polizas[Fin_Vigencia] >= FechaMin,
+			        fact_polizas[Fin_Vigencia] <= FechaMax
+			    )
+		formatString: 0
+		lineageTag: 75f31d1d-f4bd-41ec-9f7f-dc3d693a3e19
+
+	column id_poliza
+		dataType: int64
+		formatString: 0
+		lineageTag: 487401e5-6759-43e3-addc-b37b3818e17d
+		summarizeBy: none
+		sourceColumn: id_poliza
+
+		annotation SummarizationSetBy = Automatic
+
+	column id_empleado
+		dataType: int64
+		formatString: 0
+		lineageTag: 3e40a60d-c1fe-4340-835e-b236d2dd8ed2
+		summarizeBy: none
+		sourceColumn: id_empleado
+
+		annotation SummarizationSetBy = Automatic
+
+	column id_aseguradora
+		dataType: int64
+		formatString: 0
+		lineageTag: 0c25cb30-2cb0-4e16-abe1-6d7d4cbcb185
+		summarizeBy: none
+		sourceColumn: id_aseguradora
+
+		annotation SummarizationSetBy = Automatic
+
+	column id_campana
+		dataType: int64
+		formatString: 0
+		lineageTag: d3b5be73-a218-4dff-8e5a-92ebdc3fdce8
+		summarizeBy: none
+		sourceColumn: id_campana
+
+		annotation SummarizationSetBy = Automatic
+
+	column id_cobertura
+		dataType: int64
+		formatString: 0
+		lineageTag: 1c321b91-b43d-4bcd-a9d1-f3705741d402
+		summarizeBy: none
+		sourceColumn: id_cobertura
+
+		annotation SummarizationSetBy = Automatic
+
+	column Fecha_Emision
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: e6879e6f-0d87-43e1-a3e4-ccb4b20e5019
+		summarizeBy: none
+		sourceColumn: Fecha_Emision
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column Tipo_Poliza
+		dataType: string
+		lineageTag: a3c579b5-0cfb-4678-a62b-22f4d66da3e1
+		summarizeBy: none
+		sourceColumn: Tipo_Poliza
+
+		annotation SummarizationSetBy = Automatic
+
+	column Tipo_de_pago
+		dataType: string
+		lineageTag: 9a5100da-d549-4d76-8ffe-7ce07e7637c9
+		summarizeBy: none
+		sourceColumn: Tipo_de_pago
+
+		annotation SummarizationSetBy = Automatic
+
+	column Estatus_Poliza
+		dataType: string
+		lineageTag: 425c264e-c5bc-46e5-8b63-041877a12b3a
+		summarizeBy: none
+		sourceColumn: Estatus_Poliza
+
+		annotation SummarizationSetBy = Automatic
+
+	column Prima_Neta
+		dataType: double
+		lineageTag: 940d0c25-7388-421c-b3d5-7d02d610f559
+		summarizeBy: sum
+		sourceColumn: Prima_Neta
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column Prima_Total
+		dataType: double
+		lineageTag: e1032419-8863-4fdf-b10b-8093140f0a33
+		summarizeBy: sum
+		sourceColumn: Prima_Total
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column numero_poliza
+		dataType: string
+		lineageTag: 0d5f1d12-1cd0-491d-a0be-23cfbaa3ed1c
+		summarizeBy: none
+		sourceColumn: numero_poliza
+
+		annotation SummarizationSetBy = Automatic
+
+	column id_cliente
+		dataType: int64
+		formatString: 0
+		lineageTag: 62aee23f-acf5-4e6c-9b37-6ddd2b21429e
+		summarizeBy: sum
+		sourceColumn: id_cliente
+
+		annotation SummarizationSetBy = Automatic
+
+	column vin
+		dataType: string
+		lineageTag: 7000f2c5-e9b2-4274-a495-5be9bc58b3f0
+		summarizeBy: none
+		sourceColumn: vin
+
+		annotation SummarizationSetBy = Automatic
+
+	column Inicio_Vigencia
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: a2dd6895-6739-4c8b-87f6-a54b4748bd47
+		summarizeBy: none
+		sourceColumn: Inicio_Vigencia
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column Fin_Vigencia
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: cabb6a8f-6553-4bb3-a2b1-531603cb1c02
+		summarizeBy: none
+		sourceColumn: Fin_Vigencia
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column id_lead
+		dataType: int64
+		formatString: 0
+		lineageTag: 491721b2-687b-4515-9793-609bd1ffa16a
+		summarizeBy: sum
+		sourceColumn: id_lead
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Antiguedad meses poliza' =
+			
+			DATEDIFF(
+			    RELATED(dim_empleados[Fecha_Alta]),fact_polizas[Fecha_Emision],MONTH)
+		formatString: 0
+		lineageTag: defba35a-7672-40fe-ba38-c12244fcd0cf
+		summarizeBy: sum
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Categoria poliza' = ```
+			
+			VAR mesesencampana = fact_polizas[Antiguedad meses poliza]
+			VAR Resultado = 
+			MAXX(
+			    FILTER(
+			    'Categorias Antiguedad',
+			    mesesencampana >= 'Categorias Antiguedad'[MesesMin] &&
+			    mesesencampana <= 'Categorias Antiguedad'[MesesMax]),'Categorias Antiguedad'[Categoria])
+			
+			RETURN Resultado
+			```
+		lineageTag: 5ff8d5f7-91d5-4dcd-b167-cd6dc2e5ed59
+		summarizeBy: none
+
+		annotation SummarizationSetBy = Automatic
+
+	partition fact_polizas = m
+		mode: import
+		source =
+				let
+				    Origen = MySQL.Database("localhost", "forum_global_seguros", [ReturnSingleDatabase=true]),
+				    forum_global_seguros_vw_fact_polizas = Origen{[Schema="forum_global_seguros",Item="vw_fact_polizas"]}[Data]
+				in
+				    forum_global_seguros_vw_fact_polizas
+
+	annotation PBI_NavigationStepName = Navegación
+
+	annotation PBI_ResultType = Table
+

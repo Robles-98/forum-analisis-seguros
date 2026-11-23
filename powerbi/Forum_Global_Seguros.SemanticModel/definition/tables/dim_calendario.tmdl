@@ -1,0 +1,178 @@
+table dim_calendario
+	lineageTag: 853596dc-076a-4e91-973d-8c05acc49b7f
+
+	column Fecha
+		dataType: dateTime
+		formatString: dd/mm/yyyy
+		lineageTag: aabd478f-4265-4584-a71e-eb0ce51be34b
+		summarizeBy: none
+		sourceColumn: Fecha
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+		annotation PBI_FormatHint = {"isDateTimeCustom":true}
+
+	column Año
+		dataType: int64
+		formatString: 0
+		lineageTag: 59db6e01-9e01-423b-9062-0b12ee8dc969
+		summarizeBy: sum
+		sourceColumn: Año
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Numero mes'
+		dataType: int64
+		formatString: 0
+		lineageTag: 8078d436-b848-4952-a7b3-0a20f1becd05
+		summarizeBy: sum
+		sourceColumn: Numero mes
+
+		annotation SummarizationSetBy = Automatic
+
+	column Mes
+		dataType: string
+		lineageTag: fdd219c5-9f6d-4d5d-b420-bdee60216f64
+		summarizeBy: none
+		sourceColumn: Mes
+		sortByColumn: 'Numero mes'
+
+		changedProperty = SortByColumn
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Mes - Año'
+		dataType: dateTime
+		formatString: mmm-yy
+		lineageTag: f9c1eab3-5f25-4573-b36a-fb98c261798b
+		summarizeBy: none
+		sourceColumn: Mes - Año
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+		annotation PBI_FormatHint = {"isCustom":true}
+
+	column 'Num dia semana'
+		dataType: int64
+		formatString: 0
+		lineageTag: 5bc0c87a-2495-48b6-b114-47ddb87f5fcc
+		summarizeBy: sum
+		sourceColumn: Num dia semana
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Dia de la semana'
+		dataType: string
+		lineageTag: 08332439-3bc9-4736-866d-6ab710b3bbc6
+		summarizeBy: none
+		sourceColumn: Dia de la semana
+
+		annotation SummarizationSetBy = Automatic
+
+	column Trimestre
+		dataType: string
+		lineageTag: a9bd3384-5976-409f-b184-8a962d5686ff
+		summarizeBy: none
+		sourceColumn: Trimestre
+
+		annotation SummarizationSetBy = Automatic
+
+	column Trimestre-año
+		dataType: string
+		lineageTag: eeb28bfb-aa6a-4657-a815-378379b991e1
+		summarizeBy: none
+		sourceColumn: Trimestre-año
+		sortByColumn: 'Orden Trimestre'
+
+		changedProperty = SortByColumn
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Num Trimestre'
+		dataType: int64
+		formatString: 0
+		lineageTag: 037388b4-4681-4db9-b07c-e36f7a24c450
+		summarizeBy: sum
+		sourceColumn: Num Trimestre
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Nombre Corto Mes'
+		dataType: string
+		lineageTag: 9447a8fa-9e8f-4a08-b716-1658c331c5a1
+		summarizeBy: none
+		sourceColumn: Nombre Corto Mes
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Numero mes y año'
+		dataType: int64
+		formatString: 0
+		lineageTag: ff8bda10-726e-46aa-8dfe-eb172301be5c
+		summarizeBy: sum
+		sourceColumn: Numero mes y año
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Nombre corto dia'
+		dataType: string
+		lineageTag: 55c8dfb6-aa96-4df4-9c12-3a21e38a365e
+		summarizeBy: none
+		sourceColumn: Nombre corto dia
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Dias Lab vs No Lab'
+		dataType: int64
+		formatString: 0
+		lineageTag: 66ab206f-088d-4f51-a4ea-9a5eed58adee
+		summarizeBy: sum
+		sourceColumn: Dias Lab vs No Lab
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Orden Trimestre' = dim_calendario[Año] * 10 + dim_calendario[Num Trimestre]
+		formatString: 0
+		lineageTag: defeb8e2-a266-40ce-bd7a-01c72adc6eee
+		summarizeBy: sum
+
+		annotation SummarizationSetBy = Automatic
+
+	column Evento = ```
+			
+			
+			VAR Fecha = dim_calendario[Fecha]
+			VAR Resultado = 
+			MAXX(
+			    FILTER(
+			        dim_temporadas,
+			    Fecha >= dim_temporadas[Fecha_inicio] &&
+			    Fecha <= dim_temporadas[Fecha_fin]),
+			    dim_temporadas[evento])
+			
+			RETURN
+			COALESCE(Resultado,"Normal")
+			```
+		lineageTag: f18675a0-2845-43bd-b0e4-ad9181fd99cc
+		summarizeBy: none
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_calendario = m
+		mode: import
+		source =
+				let
+				    Origen = Excel.Workbook(File.Contents("C:\Users\lfrg9\Desktop\Fechas.xlsx"), null, true),
+				    Fechas_Table = Origen{[Item="Fechas",Kind="Table"]}[Data],
+				    #"Tipo cambiado" = Table.TransformColumnTypes(Fechas_Table,{{"Fecha", type date}, {"Año", Int64.Type}, {"Numero mes", Int64.Type}, {"Mes", type text}, {"Mes - Año", type date}, {"Num dia semana", Int64.Type}, {"Dia de la semana", type text}, {"Trimestre", type text}, {"Trimestre-año", type text}, {"Num Trimestre", Int64.Type}, {"Nombre Corto Mes", type text}, {"Numero mes y año", Int64.Type}, {"Nombre corto dia", type text}, {"Dias Lab vs No Lab", Int64.Type}})
+				in
+				    #"Tipo cambiado"
+
+	annotation PBI_ResultType = Table
+
+	annotation PBI_NavigationStepName = Navegación
+

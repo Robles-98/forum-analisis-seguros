@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "Report",
+    "displayName": "Forum_Global_Seguros"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "f5b1c217-2529-4808-96a2-ae590f16edfa"
+  }
+}

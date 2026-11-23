@@ -1,0 +1,48 @@
+table 'Categorias Antiguedad'
+	lineageTag: 4b138b94-9f37-41a3-998d-f76fbd5f148c
+
+	column Categoria
+		lineageTag: 0c3607bc-5cfe-493c-b81d-d8af3ad36116
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Categoria]
+		sortByColumn: MesesMin
+
+		annotation SummarizationSetBy = Automatic
+
+	column MesesMin
+		formatString: 0
+		lineageTag: 2eea9d37-39da-4c33-be96-615ed83f46e9
+		summarizeBy: sum
+		isNameInferred
+		sourceColumn: [MesesMin]
+
+		annotation SummarizationSetBy = Automatic
+
+	column MesesMax
+		formatString: 0
+		lineageTag: 48408296-f42c-490b-b36a-5af7e842a953
+		summarizeBy: sum
+		isNameInferred
+		sourceColumn: [MesesMax]
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'Categorias Antiguedad' = calculated
+		mode: import
+		source =
+				
+				DATATABLE(
+				    "Categoria", STRING,
+				    "MesesMin", INTEGER,
+				    "MesesMax", INTEGER,
+				    {
+				        {"Train", 0, 3},
+				        {"Gold", 4, 6},
+				        {"Elite", 7, 11},
+				        {"Premier", 12, 999}
+				    }
+				)
+
+	annotation PBI_Id = 0ccae1a9f3e9414c9ce716544eea604e
+

@@ -1,0 +1,53 @@
+table dim_metas_aseguradora
+	lineageTag: 51b3147e-6299-43c5-9f41-99dfa6ecab9e
+
+	column id_aseguradora
+		dataType: int64
+		formatString: 0
+		lineageTag: 6d89013c-7f09-4f4a-b019-5661fe89d919
+		summarizeBy: none
+		sourceColumn: id_aseguradora
+
+		annotation SummarizationSetBy = Automatic
+
+	column Anio
+		dataType: int64
+		formatString: 0
+		lineageTag: cc713b17-0144-42ca-81f7-0dc559569a5d
+		summarizeBy: sum
+		sourceColumn: Anio
+
+		annotation SummarizationSetBy = Automatic
+
+	column Meta_polizas
+		dataType: int64
+		formatString: 0
+		lineageTag: 1981d46d-1758-4c5b-9666-abe0640939c1
+		summarizeBy: sum
+		sourceColumn: Meta_polizas
+
+		annotation SummarizationSetBy = Automatic
+
+	column Meta_prima
+		dataType: double
+		lineageTag: e4c51b18-e0ba-4356-8a52-e057e397b38f
+		summarizeBy: sum
+		sourceColumn: Meta_prima
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	partition dim_metas_aseguradora = m
+		mode: import
+		source =
+				let
+				    Origen = MySQL.Database("localhost", "forum_global_seguros", [ReturnSingleDatabase=true]),
+				    forum_global_seguros_vw_dim_metas_aseguradora = Origen{[Schema="forum_global_seguros",Item="vw_dim_metas_aseguradora"]}[Data]
+				in
+				    forum_global_seguros_vw_dim_metas_aseguradora
+
+	annotation PBI_NavigationStepName = Navegación
+
+	annotation PBI_ResultType = Table
+

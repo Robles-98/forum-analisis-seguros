@@ -1,0 +1,33 @@
+table dim_aseguradoras
+	lineageTag: 88a95b9c-d41f-4c99-9efa-db11f38e0d25
+
+	column id_aseguradora
+		dataType: int64
+		formatString: 0
+		lineageTag: 6adb4fa0-f436-4a6d-9ac6-c2380adab434
+		summarizeBy: none
+		sourceColumn: id_aseguradora
+
+		annotation SummarizationSetBy = Automatic
+
+	column Aseguradora
+		dataType: string
+		lineageTag: c0e7086d-3c52-4e77-afa4-2bf65365ce49
+		summarizeBy: none
+		sourceColumn: Aseguradora
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_aseguradoras = m
+		mode: import
+		source =
+				let
+				    Origen = MySQL.Database("localhost", "forum_global_seguros", [ReturnSingleDatabase=true]),
+				    forum_global_seguros_vw_dim_aseguradoras = Origen{[Schema="forum_global_seguros",Item="vw_dim_aseguradoras"]}[Data]
+				in
+				    forum_global_seguros_vw_dim_aseguradoras
+
+	annotation PBI_NavigationStepName = Navegación
+
+	annotation PBI_ResultType = Table
+

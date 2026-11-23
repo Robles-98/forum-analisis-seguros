@@ -1,0 +1,7 @@
+DEFINE
+		MEASURE Medidas[TotalPolizas] = 
+			CALCULATE(
+				DISTINCTCOUNT(vw_fact_pagos[id_poliza]),
+				vw_fact_pagos[Estado_del_pago] IN {"Pagado","Pagado con Atraso"})
+EVALUATE
+SUMMARIZECOLUMNS(vw_dim_aseguradoras[Aseguradora],"TotalPolizas",Medidas[TotalPolizas])

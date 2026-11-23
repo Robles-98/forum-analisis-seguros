@@ -1,0 +1,33 @@
+table dim_coberturas
+	lineageTag: b47f8f2b-2165-4b4e-9aa0-07c2b79dc1fd
+
+	column id_cobertura
+		dataType: int64
+		formatString: 0
+		lineageTag: ea6633b9-b3ff-47d1-b56c-c2d4f6381d24
+		summarizeBy: none
+		sourceColumn: id_cobertura
+
+		annotation SummarizationSetBy = Automatic
+
+	column Cobertura
+		dataType: string
+		lineageTag: 3824e082-71a4-4f52-b94f-9d0018ec708f
+		summarizeBy: none
+		sourceColumn: Cobertura
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_coberturas = m
+		mode: import
+		source =
+				let
+				    Origen = MySQL.Database("localhost", "forum_global_seguros", [ReturnSingleDatabase=true]),
+				    forum_global_seguros_vw_dim_coberturas = Origen{[Schema="forum_global_seguros",Item="vw_dim_coberturas"]}[Data]
+				in
+				    forum_global_seguros_vw_dim_coberturas
+
+	annotation PBI_NavigationStepName = Navegación
+
+	annotation PBI_ResultType = Table
+

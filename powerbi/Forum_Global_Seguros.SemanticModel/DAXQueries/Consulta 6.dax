@@ -1,0 +1,24 @@
+DEFINE
+	MEASURE Medidas[Polizas Renovadas] = 
+VAR Tipo = "Venta Nueva"
+VAR PolizasReno = 
+	CALCULATE(
+		COUNTX(
+			SUMMARIZE(vw_fact_polizas,
+			vw_fact_polizas[Tipo_Poliza]),
+			[TotalPolizas]),
+		vw_fact_polizas[Tipo_Poliza] = "Renovacion")
+VAR Resultado = 
+IF(
+	Tipo = "Venta Nueva",
+	BLANK(),
+	PolizasReno)
+RETURN Resultado
+
+EVALUATE
+ADDCOLUMNS(
+	SUMMARIZE(
+		vw_fact_polizas,
+		vw_fact_polizas[Tipo_Poliza]),
+		"Polizas Renovadas",
+		[Polizas Renovadas])

@@ -1,0 +1,204 @@
+{
+  "version": "1.1.0",
+  "diagrams": [
+    {
+      "ordinal": 0,
+      "scrollPosition": {
+        "x": 274.94626179362456,
+        "y": 0
+      },
+      "nodes": [
+        {
+          "location": {
+            "x": 80.447396787560692,
+            "y": 183.12889745189113
+          },
+          "nodeIndex": "dim_aseguradoras",
+          "nodeLineageTag": "88a95b9c-d41f-4c99-9efa-db11f38e0d25",
+          "size": {
+            "height": 128,
+            "width": 234
+          },
+          "zIndex": 13
+        },
+        {
+          "location": {
+            "x": 411.43254444977021,
+            "y": 0
+          },
+          "nodeIndex": "dim_campanas",
+          "nodeLineageTag": "400439ff-53d0-4ba4-a99d-7d91264caa8d",
+          "size": {
+            "height": 176,
+            "width": 234
+          },
+          "zIndex": 12
+        },
+        {
+          "location": {
+            "x": 801.07540504485655,
+            "y": 0
+          },
+          "nodeIndex": "dim_coberturas",
+          "nodeLineageTag": "b47f8f2b-2165-4b4e-9aa0-07c2b79dc1fd",
+          "size": {
+            "height": 128,
+            "width": 234
+          },
+          "zIndex": 5
+        },
+        {
+          "location": {
+            "x": 113.13017135722009,
+            "y": 627.13259399999936
+          },
+          "nodeIndex": "dim_metas_aseguradora",
+          "nodeLineageTag": "51b3147e-6299-43c5-9f41-99dfa6ecab9e",
+          "size": {
+            "height": 176,
+            "width": 234
+          },
+          "zIndex": 6
+        },
+        {
+          "location": {
+            "x": 1461.3192027226205,
+            "y": 0
+          },
+          "nodeIndex": "dim_empleados",
+          "nodeLineageTag": "b61a0d64-2443-4e96-9c67-a4d4dca1fa40",
+          "size": {
+            "height": 248,
+            "width": 234
+          },
+          "zIndex": 10
+        },
+        {
+          "location": {
+            "x": 411.39844399999947,
+            "y": 340.61339846575197
+          },
+          "nodeIndex": "fact_leads",
+          "nodeLineageTag": "80258b23-1082-4207-babe-22bbf39f69a0",
+          "size": {
+            "height": 224,
+            "width": 234
+          },
+          "zIndex": 7
+        },
+        {
+          "location": {
+            "x": 797.183549598777,
+            "y": 324.40194633610753
+          },
+          "nodeIndex": "fact_polizas",
+          "nodeLineageTag": "814802c2-c788-4185-b8d5-94e5f045951f",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 8
+        },
+        {
+          "location": {
+            "x": 1213.8187833427162,
+            "y": 322.42410199999949
+          },
+          "nodeIndex": "fact_pagos",
+          "nodeLineageTag": "f98c6413-4128-4d3b-b510-8fcffd545dec",
+          "size": {
+            "height": 224,
+            "width": 234
+          },
+          "zIndex": 11
+        },
+        {
+          "location": {
+            "x": 1400.4015868467397,
+            "y": 657.7726817328753
+          },
+          "nodeIndex": "dim_calendario",
+          "nodeLineageTag": "853596dc-076a-4e91-973d-8c05acc49b7f",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 9
+        },
+        {
+          "location": {
+            "x": 2130.4386668467396,
+            "y": 564.27624073287552
+          },
+          "nodeIndex": "Medidas",
+          "nodeLineageTag": "b2cecba9-1e39-4078-b17c-abf4935ee313",
+          "size": {
+            "height": 200,
+            "width": 234
+          },
+          "zIndex": 14
+        },
+        {
+          "location": {
+            "x": 1792.2479007158513,
+            "y": 258.42019286643779
+          },
+          "nodeIndex": "Categorias Antiguedad",
+          "nodeLineageTag": "4b138b94-9f37-41a3-998d-f76fbd5f148c",
+          "size": {
+            "height": 200,
+            "width": 234
+          },
+          "zIndex": 3
+        },
+        {
+          "location": {
+            "x": 1983.3995769282906,
+            "y": 0
+          },
+          "nodeIndex": "dim_temporadas",
+          "nodeLineageTag": "d56a4347-3673-4f4b-b39b-ce62b54ca1a5",
+          "size": {
+            "height": 200,
+            "width": 234
+          },
+          "zIndex": 4
+        },
+        {
+          "location": {
+            "x": 701.32064164643043,
+            "y": 710.61578155687437
+          },
+          "nodeIndex": "fact_tickets_atc",
+          "nodeLineageTag": "4d9fc3d9-f89a-44ec-aadd-4a7ddc6a869f",
+          "size": {
+            "height": 248,
+            "width": 234
+          },
+          "zIndex": 2
+        },
+        {
+          "location": {
+            "x": 1130.3927374719306,
+            "y": 0
+          },
+          "nodeIndex": "dim_areas",
+          "nodeLineageTag": "656804f4-c151-4a4b-a752-fade3da44717",
+          "size": {
+            "height": 128,
+            "width": 234
+          },
+          "zIndex": 1
+        }
+      ],
+      "name": "Todas las tablas",
+      "zoomValue": 56.447393005377812,
+      "pinKeyFieldsToTop": false,
+      "showExtraHeaderInfo": false,
+      "hideKeyFieldsWhenCollapsed": false,
+      "tablesLocked": false
+    }
+  ],
+  "selectedDiagram": "Todas las tablas",
+  "defaultDiagram": "Todas las tablas"
+}

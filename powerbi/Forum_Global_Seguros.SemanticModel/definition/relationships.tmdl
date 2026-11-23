@@ -1,0 +1,101 @@
+relationship AutoDetected_2acf3cd4-8bae-44c4-b010-91b4f6534e8e
+	fromColumn: dim_metas_aseguradora.id_aseguradora
+	toColumn: dim_aseguradoras.id_aseguradora
+
+relationship AutoDetected_994102ab-ea76-4630-a181-081fbaaf2480
+	fromColumn: fact_polizas.id_aseguradora
+	toColumn: dim_aseguradoras.id_aseguradora
+
+relationship AutoDetected_016e0557-fb99-41c7-ad98-46aaf639fdf6
+	fromColumn: fact_leads.id_campana
+	toColumn: dim_campanas.id_campana
+
+relationship AutoDetected_4c5ffcf4-bfee-443a-9d9f-0df65382b312
+	fromColumn: fact_polizas.id_campana
+	toColumn: dim_campanas.id_campana
+
+relationship AutoDetected_fd5a1459-2ae2-4b52-a1d7-c2e9a2d82b02
+	fromColumn: fact_polizas.id_cobertura
+	toColumn: dim_coberturas.id_cobertura
+
+relationship AutoDetected_ad0453be-8347-4d5b-86f3-9c8132703ce9
+	fromColumn: fact_leads.id_empleado
+	toColumn: dim_empleados.id_empleado
+
+relationship AutoDetected_60bdcbab-8467-4246-b19f-74f3a534c386
+	fromColumn: fact_polizas.id_empleado
+	toColumn: dim_empleados.id_empleado
+
+relationship ef5e58b2-bf73-9ba7-865b-b906e047357d
+	fromColumn: fact_polizas.Fecha_Emision
+	toColumn: dim_calendario.Fecha
+
+relationship d3eac4e9-d17f-02ba-7f01-cf05c4876632
+	fromColumn: fact_leads.Fecha_de_contacto
+	toColumn: dim_calendario.Fecha
+
+relationship 9c43c6cf-f48d-1202-0a56-a29063a3c242
+	isActive: false
+	fromColumn: fact_pagos.Fecha_Pago
+	toColumn: dim_calendario.Fecha
+
+relationship AutoDetected_d273fa42-ba2c-4849-8f92-2cd7f00ee128
+	isActive: false
+	fromColumn: fact_polizas.id_lead
+	toColumn: fact_leads.id_lead
+
+relationship 38856002-7fff-26ea-1631-2e034a502df9
+	isActive: false
+	fromColumn: fact_polizas.Fin_Vigencia
+	toColumn: dim_calendario.Fecha
+
+relationship 2b016e84-e1db-2c91-62b5-d393b9371c28
+	isActive: false
+	fromColumn: dim_empleados.Fecha_Alta
+	toColumn: dim_calendario.Fecha
+
+relationship 8a866e67-b3f2-7228-337f-5bc152af2e18
+	isActive: false
+	fromColumn: dim_empleados.Fecha_Baja
+	toColumn: dim_calendario.Fecha
+
+relationship 4d800e37-e305-562a-da5c-5839c9395bc7
+	fromColumn: fact_polizas.'Categoria poliza'
+	toColumn: 'Categorias Antiguedad'.Categoria
+
+relationship 9f3081f0-9df8-b121-2f5a-aaf1b65c09b5
+	fromColumn: fact_leads.'Categoria LEAD'
+	toColumn: 'Categorias Antiguedad'.Categoria
+
+relationship 9872441c-b2b4-d242-9e9b-7d1615b8b4fc
+	crossFilteringBehavior: bothDirections
+	fromCardinality: one
+	fromColumn: fact_pagos.id_poliza
+	toColumn: fact_polizas.id_poliza
+
+relationship 01e686cc-c45b-7a39-552d-3575c47deeb9
+	fromColumn: fact_tickets_atc.id_campana
+	toColumn: dim_campanas.id_campana
+
+relationship 60de1551-1181-14ea-c56f-5d1eae2e87a7
+	fromColumn: fact_tickets_atc.id_empleado
+	toColumn: dim_empleados.id_empleado
+
+relationship 9a121ce8-73d5-d20c-3234-b197d69407d3
+	fromColumn: fact_tickets_atc.fecha_apertura_dia
+	toColumn: dim_calendario.Fecha
+
+relationship 6db84973-df84-c307-d3b3-45230d199208
+	isActive: false
+	fromColumn: fact_tickets_atc.fecha_cierre_dia
+	toColumn: dim_calendario.Fecha
+
+relationship AutoDetected_6adac683-1eae-4372-9ea0-579d5f592cd3
+	fromColumn: dim_campanas.id_area
+	toColumn: dim_areas.id_area
+
+relationship AutoDetected_b863c039-16d7-4283-90e1-77486ee0e093
+	isActive: false
+	fromColumn: dim_empleados.id_area
+	toColumn: dim_areas.id_area
+

@@ -1,0 +1,16 @@
+DEFINE
+	MEASURE Medidas[Top3 Aseguradoras] =
+	CALCULATE(
+		[MontoTotal],
+		TOPN(3,
+		ALL(vw_dim_aseguradoras[Aseguradora]),
+		[MontoTotal],
+		DESC)
+	)
+	
+EVALUATE 
+ADDCOLUMNS(
+SUMMARIZE(
+	vw_dim_aseguradoras,
+	vw_dim_aseguradoras[Aseguradora]),
+	"Monto de venta",[Top3 Aseguradoras])

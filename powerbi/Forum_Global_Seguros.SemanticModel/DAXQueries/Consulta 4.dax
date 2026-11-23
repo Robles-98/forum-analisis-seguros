@@ -1,0 +1,11 @@
+DEFINE
+	MEASURE medidas[Ventas por Canal] =
+			CALCULATE(
+				COUNTROWS(vw_fact_polizas),
+				USERELATIONSHIP(vw_fact_polizas[id_lead],vw_fact_leads[id_lead]),
+				CROSSFILTER(Fechas[Fecha],vw_fact_leads[Fecha_de_contacto],None))
+EVALUATE
+	SUMMARIZECOLUMNS(
+		vw_fact_leads[Origen_Lead],"Ventas Totales",[Ventas por Canal])
+		
+			

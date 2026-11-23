@@ -1,0 +1,22 @@
+DEFINE
+	MEASURE Medidas[Ejecutivos Activos x Campaña] = 
+	VAR InicioM = MIN(dim_calendario[Fecha])
+	VAR FinM = MAX(dim_calendario[Fecha])
+	VAR Puente = TREATAS(VALUES(dim_campanas[id_campana]),dim_empleados[id_campana])
+	
+	VAR Activos = 
+	CALCULATE(
+		COUNTROWS(dim_empleados),
+		FILTER(
+			dim_empleados,
+			dim_empleados[Fecha_Alta]<= FinM &&
+			(ISBLANK(dim_empleados[Fecha_Baja]) || dim_empleados[Fecha_Baja]>= FinM)
+		),
+		dim_empleados[id_area] IN {2,4},
+		dim_empleados[Puesto] = "EJECUTIVO",
+		Puente
+	)
+	RETURN Activos
+	
+	EVALUATE
+	SUMMARIZECOLUMNS(dim_campanas[Campaña],"Activos",[Ejecutivos Activos x Campaña])

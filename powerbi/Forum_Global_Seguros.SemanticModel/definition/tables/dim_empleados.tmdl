@@ -1,0 +1,116 @@
+table dim_empleados
+	lineageTag: b61a0d64-2443-4e96-9c67-a4d4dca1fa40
+
+	column id_empleado
+		dataType: int64
+		formatString: 0
+		lineageTag: 639d0aa7-d8c7-48e1-bacf-e1625c111864
+		summarizeBy: none
+		sourceColumn: id_empleado
+
+		annotation SummarizationSetBy = Automatic
+
+	column Nombre_Empleado
+		dataType: string
+		lineageTag: ea5b3d82-f437-4c0d-bb5a-310c54c1b884
+		summarizeBy: none
+		sourceColumn: Nombre_Empleado
+
+		annotation SummarizationSetBy = Automatic
+
+	column Puesto
+		dataType: string
+		lineageTag: 3b14ecf8-5ded-4a5b-836b-4ec888ba51b6
+		summarizeBy: none
+		sourceColumn: Puesto
+
+		annotation SummarizationSetBy = Automatic
+
+	column Turno_empleado
+		dataType: string
+		lineageTag: ca3ebdbe-8d48-466b-bc31-6bea508b1df7
+		summarizeBy: none
+		sourceColumn: Turno_empleado
+
+		annotation SummarizationSetBy = Automatic
+
+	column Fecha_Alta
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 5eb456be-c176-4147-8129-83c8ad9f20a4
+		summarizeBy: none
+		sourceColumn: Fecha_Alta
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column Fecha_Baja
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: ee2f237f-d48a-4052-aaf5-30531f8a556b
+		summarizeBy: none
+		sourceColumn: Fecha_Baja
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column estatus
+		dataType: string
+		lineageTag: 9c46abe9-eef0-4b42-8e8b-e078c7b1e683
+		summarizeBy: none
+		sourceColumn: estatus
+
+		annotation SummarizationSetBy = Automatic
+
+	column id_campana
+		dataType: int64
+		formatString: 0
+		lineageTag: 8356f95f-e8bc-4b7a-a505-2202dedb9b75
+		summarizeBy: sum
+		sourceColumn: id_campana
+
+		annotation SummarizationSetBy = Automatic
+
+	column id_area
+		dataType: int64
+		formatString: 0
+		lineageTag: 322ea43c-c784-4572-9b55-e13fe181d081
+		summarizeBy: sum
+		sourceColumn: id_area
+
+		annotation SummarizationSetBy = Automatic
+
+	column Campaña =
+			
+			LOOKUPVALUE(
+			    dim_campanas[Campaña],
+			    dim_campanas[id_campana],
+			    dim_empleados[id_campana])
+		lineageTag: 8d44256a-8c9a-4238-aee3-ec9b5ebeac53
+		summarizeBy: none
+
+		annotation SummarizationSetBy = Automatic
+
+	column area
+		dataType: string
+		lineageTag: 9916d1b4-f2d6-4247-bc39-0c2f1ed3d637
+		summarizeBy: none
+		sourceColumn: area
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_empleados = m
+		mode: import
+		source =
+				let
+				    Origen = MySQL.Database("localhost", "forum_global_seguros", [ReturnSingleDatabase=true]),
+				    forum_global_seguros_vw_dim_empleados = Origen{[Schema="forum_global_seguros",Item="vw_dim_empleados"]}[Data]
+				in
+				    forum_global_seguros_vw_dim_empleados
+
+	annotation PBI_NavigationStepName = Navegación
+
+	annotation PBI_ResultType = Table
+

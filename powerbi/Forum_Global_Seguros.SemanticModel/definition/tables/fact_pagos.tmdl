@@ -1,0 +1,110 @@
+table fact_pagos
+	lineageTag: f98c6413-4128-4d3b-b510-8fcffd545dec
+
+	column id_pago
+		dataType: int64
+		formatString: 0
+		lineageTag: 61920bf5-20cd-428f-ab08-8fd2c1f7d08f
+		summarizeBy: sum
+		sourceColumn: id_pago
+
+		annotation SummarizationSetBy = Automatic
+
+	column id_poliza
+		dataType: int64
+		formatString: 0
+		lineageTag: 01cd0bbd-b4fc-42c5-aa7c-8ef33bebca07
+		summarizeBy: none
+		sourceColumn: id_poliza
+
+		annotation SummarizationSetBy = Automatic
+
+	column Fecha_Pago
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: ab3dde2d-cd77-4705-9f1f-ea2ff1f6ee1d
+		summarizeBy: none
+		sourceColumn: Fecha_Pago
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column Monto_Pagado
+		dataType: double
+		lineageTag: c3f8ceb7-0d8f-4f7d-b877-059ae9653569
+		summarizeBy: sum
+		sourceColumn: Monto_Pagado
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column Metodo_de_pago
+		dataType: string
+		lineageTag: 69f73986-969f-4ac2-b7ee-cac7545335b0
+		summarizeBy: none
+		sourceColumn: Metodo_de_pago
+
+		annotation SummarizationSetBy = Automatic
+
+	column Estado_del_pago
+		dataType: string
+		lineageTag: 1527b0f4-0ef3-46a9-91e9-4d19b8cb9032
+		summarizeBy: none
+		sourceColumn: Estado_del_pago
+
+		annotation SummarizationSetBy = Automatic
+
+	column Numero_Recibo
+		dataType: int64
+		formatString: 0
+		lineageTag: d0236a12-3920-4793-99c9-ec6b1114613f
+		summarizeBy: sum
+		sourceColumn: Numero_Recibo
+
+		annotation SummarizationSetBy = Automatic
+
+	column Total_Recibos
+		dataType: int64
+		formatString: 0
+		lineageTag: b7378c4f-addd-4100-ab97-48f308e8376a
+		summarizeBy: sum
+		sourceColumn: Total_Recibos
+
+		annotation SummarizationSetBy = Automatic
+
+	column Fecha_Limite_Pago
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 683f0cfb-d160-4426-91da-f3de1858683b
+		summarizeBy: none
+		sourceColumn: Fecha_Limite_Pago
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column Base_Comision
+		dataType: double
+		lineageTag: 30f6df53-473c-41d5-a7e1-feba076ec9af
+		summarizeBy: sum
+		sourceColumn: Base_Comision
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	partition fact_pagos = m
+		mode: import
+		source =
+				let
+				    Origen = MySQL.Database("localhost", "forum_global_seguros", [ReturnSingleDatabase=true]),
+				    forum_global_seguros_vw_fact_pagos = Origen{[Schema="forum_global_seguros",Item="vw_fact_pagos"]}[Data]
+				in
+				    forum_global_seguros_vw_fact_pagos
+
+	annotation PBI_NavigationStepName = Navegación
+
+	annotation PBI_ResultType = Table
+

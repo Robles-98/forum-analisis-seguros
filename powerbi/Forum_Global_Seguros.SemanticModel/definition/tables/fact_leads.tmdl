@@ -1,0 +1,126 @@
+table fact_leads
+	lineageTag: 80258b23-1082-4207-babe-22bbf39f69a0
+
+	column id_lead
+		dataType: int64
+		formatString: 0
+		lineageTag: 95cff620-c9c9-4017-b802-3699052d68ce
+		summarizeBy: sum
+		sourceColumn: id_lead
+
+		annotation SummarizationSetBy = Automatic
+
+	column id_cliente
+		dataType: int64
+		formatString: 0
+		lineageTag: 3d150b27-ffb5-4065-bc6e-2b6c0cd0b4e4
+		summarizeBy: sum
+		sourceColumn: id_cliente
+
+		annotation SummarizationSetBy = Automatic
+
+	column id_campana
+		dataType: int64
+		formatString: 0
+		lineageTag: 6c42c4c4-af3b-40dc-ac98-3e2520bb2bac
+		summarizeBy: none
+		sourceColumn: id_campana
+
+		annotation SummarizationSetBy = Automatic
+
+	column id_empleado
+		dataType: int64
+		formatString: 0
+		lineageTag: 53eb3d63-c661-47bf-93ca-13f870a22511
+		summarizeBy: none
+		sourceColumn: id_empleado
+
+		annotation SummarizationSetBy = Automatic
+
+	column Fecha_de_contacto
+		dataType: dateTime
+		formatString: dd/mm/yyyy
+		lineageTag: a912363c-34f3-459c-b1bc-923d52d34de2
+		summarizeBy: none
+		sourceColumn: Fecha_de_contacto
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isDateTimeCustom":true}
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column Origen_Lead
+		dataType: string
+		lineageTag: eedac76a-8089-4412-b24c-906f0ed12410
+		summarizeBy: none
+		sourceColumn: Origen_Lead
+
+		annotation SummarizationSetBy = Automatic
+
+	column vin
+		dataType: string
+		lineageTag: 71804122-7a9e-4605-aa25-382d491f579d
+		summarizeBy: none
+		sourceColumn: vin
+
+		annotation SummarizationSetBy = Automatic
+
+	column Estatus_Lead
+		dataType: string
+		lineageTag: 07eba64f-c67d-4fe1-a508-d704abe2b1ba
+		summarizeBy: none
+		sourceColumn: Estatus_Lead
+
+		annotation SummarizationSetBy = Automatic
+
+	column Fecha_y_Hora_de_Contacto
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: ca9448b7-c8fb-4b26-b875-06ec1ce1e598
+		summarizeBy: none
+		sourceColumn: Fecha_y_Hora_de_Contacto
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Antiguedad en meses' =
+			
+			DATEDIFF(
+			    RELATED(dim_empleados[Fecha_Alta]),fact_leads[Fecha_de_contacto],MONTH)
+		formatString: 0
+		lineageTag: 54d4f6d7-e30d-47aa-9191-1279766af4a2
+		summarizeBy: sum
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Categoria LEAD' = ```
+			
+			VAR mesesencampana = fact_leads[Antiguedad en meses]
+			VAR Resultado = 
+			MAXX(
+			    FILTER(
+			        'Categorias Antiguedad',
+			        mesesencampana >= 'Categorias Antiguedad'[MesesMin] &&
+			        mesesencampana <= 'Categorias Antiguedad'[MesesMax]),'Categorias Antiguedad'[Categoria]
+			)
+			
+			RETURN Resultado
+			```
+		lineageTag: 031f3c92-a3cb-4e41-8046-46eedf1a3a14
+		summarizeBy: none
+
+		annotation SummarizationSetBy = Automatic
+
+	partition fact_leads = m
+		mode: import
+		source =
+				let
+				    Origen = MySQL.Database("localhost", "forum_global_seguros", [ReturnSingleDatabase=true]),
+				    forum_global_seguros_vw_fact_leads = Origen{[Schema="forum_global_seguros",Item="vw_fact_leads"]}[Data]
+				in
+				    forum_global_seguros_vw_fact_leads
+
+	annotation PBI_NavigationStepName = Navegación
+
+	annotation PBI_ResultType = Table
+

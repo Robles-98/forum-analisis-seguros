@@ -1,0 +1,33 @@
+table dim_areas
+	lineageTag: 656804f4-c151-4a4b-a752-fade3da44717
+
+	column id_area
+		dataType: int64
+		formatString: 0
+		lineageTag: 2babdc31-01dd-4242-8999-85300a4235b2
+		summarizeBy: none
+		sourceColumn: id_area
+
+		annotation SummarizationSetBy = Automatic
+
+	column nombre_area
+		dataType: string
+		lineageTag: 3a5c7958-1ff6-468f-9eae-95447aefbfcd
+		summarizeBy: none
+		sourceColumn: nombre_area
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_areas = m
+		mode: import
+		source =
+				let
+				    Origen = MySQL.Database("localhost", "forum_global_seguros", [ReturnSingleDatabase=true]),
+				    forum_global_seguros_vw_dim_areas = Origen{[Schema="forum_global_seguros",Item="vw_dim_areas"]}[Data]
+				in
+				    forum_global_seguros_vw_dim_areas
+
+	annotation PBI_NavigationStepName = Navegación
+
+	annotation PBI_ResultType = Table
+

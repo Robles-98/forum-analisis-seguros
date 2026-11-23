@@ -1,0 +1,3 @@
+DEFINE
+	MEASURE medidas[Tickets totales] = 
+	COUNTROWS(fact_tickets_atc)

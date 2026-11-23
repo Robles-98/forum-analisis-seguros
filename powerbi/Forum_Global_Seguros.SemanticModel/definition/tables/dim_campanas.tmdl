@@ -1,0 +1,67 @@
+table dim_campanas
+	lineageTag: 400439ff-53d0-4ba4-a99d-7d91264caa8d
+
+	column id_campana
+		dataType: int64
+		formatString: 0
+		lineageTag: d8a120b2-ab7d-48ee-a457-607534106b63
+		summarizeBy: none
+		sourceColumn: id_campana
+
+		annotation SummarizationSetBy = Automatic
+
+	column Campaña
+		dataType: string
+		lineageTag: df434147-4b33-4c50-b7aa-05a773053758
+		summarizeBy: none
+		sourceColumn: Campaña
+
+		annotation SummarizationSetBy = Automatic
+
+	column Segmento
+		dataType: string
+		lineageTag: 7ba12693-e213-446e-ad98-00f7d26872b5
+		summarizeBy: none
+		sourceColumn: Segmento
+
+		annotation SummarizationSetBy = Automatic
+
+	column meta_conversion
+		dataType: double
+		formatString: 0.00%;-0.00%;0.00%
+		lineageTag: b35677d2-a2c2-4102-a8f7-5512596cbd66
+		summarizeBy: sum
+		sourceColumn: meta_conversion
+
+		annotation SummarizationSetBy = Automatic
+
+	column id_area
+		dataType: int64
+		formatString: 0
+		lineageTag: b05253b3-3b66-4318-97ec-522e4498d322
+		summarizeBy: none
+		sourceColumn: id_area
+
+		annotation SummarizationSetBy = Automatic
+
+	column cartera_renovacion
+		dataType: string
+		lineageTag: 2bc55a1a-2f6b-441a-9cad-312259ac9e4a
+		summarizeBy: none
+		sourceColumn: cartera_renovacion
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_campanas = m
+		mode: import
+		source =
+				let
+				    Origen = MySQL.Database("localhost", "forum_global_seguros", [ReturnSingleDatabase=true]),
+				    forum_global_seguros_vw_dim_campanas = Origen{[Schema="forum_global_seguros",Item="vw_dim_campanas"]}[Data]
+				in
+				    forum_global_seguros_vw_dim_campanas
+
+	annotation PBI_NavigationStepName = Navegación
+
+	annotation PBI_ResultType = Table
+
